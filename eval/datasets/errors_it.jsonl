@@ -1,0 +1,3 @@
+{"id": 1, "learner_text": "Ieri io sono andato al cinema con mia amica.", "level": "A2", "errors": [{"original": "con mia amica", "correction": "con la mia amica", "type": "grammar"}]}
+{"id": 2, "learner_text": "Vorrei prenotare una tavola per due persone.", "level": "A2", "errors": [{"original": "una tavola", "correction": "un tavolo", "type": "vocabulary"}]}
+{"id": 3, "learner_text": "Mi piace molto la pizza e la pasta.", "level": "A2", "errors": []}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Language Tutor</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Voice Tutor</h1>
+    <nav class="tabs">
+      <button class="tab active" data-tab="talk">Talk</button>
+      <button class="tab" data-tab="review">Review <span id="due-badge" class="badge hidden"></span></button>
+      <button class="tab" data-tab="progress">Progress</button>
+    </nav>
+  </header>
+
+  <!-- Onboarding (shown once, until a learner exists) -->
+  <section id="onboarding" class="panel hidden">
+    <h2>Welcome</h2>
+    <form id="onboarding-form">
+      <label>Your name <input name="name" required></label>
+      <label>I want to learn
+        <select name="target_language">
+          <option>Italian</option><option>Spanish</option><option>French</option>
+          <option>German</option><option>Portuguese</option><option>English</option>
+        </select>
+      </label>
+      <label>Explanations in
+        <select name="explanation_language">
+          <option>English</option><option>Spanish</option><option>Italian</option>
+          <option>French</option><option>German</option><option>Portuguese</option>
+        </select>
+      </label>
+      <label>My goal <input name="goal" placeholder="Erasmus, travel, work..."></label>
+      <button type="submit" class="primary">Start</button>
+    </form>
+  </section>
+
+  <main>
+    <!-- TALK -->
+    <section id="tab-talk" class="panel">
+      <div id="talk-setup">
+        <label>Scenario
+          <select id="scenario">
+            <option>free conversation</option>
+            <option>ordering at a restaurant</option>
+            <option>renting a flat</option>
+            <option>telling a friend about your weekend</option>
+            <option>asking for directions</option>
+          </select>
+        </label>
+        <button id="start-session" class="primary">Start session</button>
+      </div>
+
+      <div id="talk-live" class="hidden">
+        <div id="chat" class="chat"></div>
+        <div class="controls">
+          <button id="record" class="record" title="Hold to talk">Hold to talk</button>
+          <form id="text-form" class="text-form">
+            <input id="text-input" placeholder="...or type here">
+            <button type="submit">Send</button>
+          </form>
+          <button id="end-session" class="secondary">End session</button>
+        </div>
+        <p id="talk-status" class="status"></p>
+      </div>
+
+      <div id="talk-summary" class="hidden">
+        <h2>Session summary</h2>
+        <p id="summary-text"></p>
+        <h3>Your mistakes</h3>
+        <ul id="summary-errors" class="errors"></ul>
+        <h3>New cards</h3>
+        <p class="hint">Remove any card you don't want. The rest are in your Review tab.</p>
+        <ul id="summary-cards" class="cards"></ul>
+        <button id="new-session" class="primary">New session</button>
+      </div>
+    </section>
+
+    <!-- REVIEW -->
+    <section id="tab-review" class="panel hidden">
+      <div id="review-empty" class="hidden"><p>Nothing to review right now. Come back later!</p></div>
+      <div id="review-card" class="flashcard hidden">
+        <p class="kind" id="card-kind"></p>
+        <p class="front" id="card-front"></p>
+        <div id="card-back-wrap" class="hidden">
+          <p class="back" id="card-back"></p>
+          <p class="explanation" id="card-explanation"></p>
+        </div>
+        <div class="card-actions">
+          <button id="play-audio" class="secondary">Play audio</button>
+          <button id="show-answer" class="primary">Show answer</button>
+        </div>
+        <div id="ratings" class="ratings hidden">
+          <button data-rating="1" class="again">Again</button>
+          <button data-rating="2" class="hard">Hard</button>
+          <button data-rating="3" class="good">Good</button>
+          <button data-rating="4" class="easy">Easy</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section id="tab-progress" class="panel hidden">
+      <div class="stats" id="stats"></div>
+      <h3>Most frequent mistakes</h3>
+      <ul id="top-errors" class="errors"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
