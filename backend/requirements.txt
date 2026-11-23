@@ -5,3 +5,4 @@ openai>=1.50
 python-dotenv>=1.0
 pydantic>=2.7
 fsrs>=5.0
+chromadb>=1.0

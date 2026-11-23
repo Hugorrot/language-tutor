@@ -23,7 +23,7 @@ def client() -> OpenAI:
     return _client
 
 
-def load_prompt(name: str, **variables) -> str:
+def load_prompt(name: str, /, **variables) -> str:
     """Read prompts/<name>.md and fill {placeholders}. Use {{ and }} for literal braces."""
     text = (config.PROMPTS_DIR / f"{name}.md").read_text(encoding="utf-8")
     return text.format(**variables)
@@ -70,6 +70,14 @@ def synthesize(text: str, instructions: str | None = None) -> bytes:
         kwargs["instructions"] = instructions   # supported by the gpt-4o-mini-tts family
     resp = client().audio.speech.create(**kwargs)
     return resp.content
+
+
+def embed(texts: list[str]) -> list[list[float]]:
+    """Embedding vectors for the memory (vector DB). One API call for the whole list."""
+    if not texts:
+        return []
+    resp = client().embeddings.create(model=config.EMBEDDING_MODEL, input=texts)
+    return [d.embedding for d in sorted(resp.data, key=lambda d: d.index)]
 
 
 class Timer:

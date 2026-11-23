@@ -3,113 +3,208 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voice Language Tutor</title>
+  <meta name="theme-color" content="#050b09">
+  <title>Voice Tutor</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.35' cy='.35'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.4' stop-color='%233ee08f'/%3E%3Cstop offset='1' stop-color='%23063'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23g)'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div class="bg" aria-hidden="true"></div>
+
   <header class="topbar">
-    <h1>Voice Tutor</h1>
+    <a class="brand" href="#talk"><span class="brand-mark"></span>Voice Tutor</a>
+    <!-- Tabs are real links (#talk, #review, #progress), so the browser's back/forward buttons work -->
     <nav class="tabs">
-      <button class="tab active" data-tab="talk">Talk</button>
-      <button class="tab" data-tab="review">Review <span id="due-badge" class="badge hidden"></span></button>
-      <button class="tab" data-tab="progress">Progress</button>
+      <a class="tab" href="#talk" data-tab="talk">Talk</a>
+      <a class="tab" href="#review" data-tab="review">Review <span id="due-badge" class="badge hidden"></span></a>
+      <a class="tab" href="#progress" data-tab="progress">Progress</a>
     </nav>
   </header>
 
   <!-- Onboarding (shown once, until a learner exists) -->
-  <section id="onboarding" class="panel hidden">
-    <h2>Welcome</h2>
-    <form id="onboarding-form">
-      <label>Your name <input name="name" required></label>
-      <label>I want to learn
-        <select name="target_language">
-          <option>Italian</option><option>Spanish</option><option>French</option>
-          <option>German</option><option>Portuguese</option><option>English</option>
-        </select>
-      </label>
-      <label>Explanations in
-        <select name="explanation_language">
-          <option>English</option><option>Spanish</option><option>Italian</option>
-          <option>French</option><option>German</option><option>Portuguese</option>
-        </select>
-      </label>
-      <label>My goal <input name="goal" placeholder="Erasmus, travel, work..."></label>
-      <button type="submit" class="primary">Start</button>
-    </form>
+  <section id="onboarding" class="onboarding hidden">
+    <div class="glass panel narrow">
+      <p class="eyebrow">Welcome</p>
+      <h1 class="title">Let's get you talking.</h1>
+      <p class="muted">A voice tutor that remembers your mistakes and turns them into practice.</p>
+      <form id="onboarding-form" class="form">
+        <label>Your name <input name="name" required autocomplete="given-name"></label>
+        <div class="row">
+          <label>I want to learn
+            <select name="target_language">
+              <option>Italian</option><option>Spanish</option><option>French</option>
+              <option>German</option><option>Portuguese</option><option>English</option>
+            </select>
+          </label>
+          <label>Explanations in
+            <select name="explanation_language">
+              <option>English</option><option>Spanish</option><option>Italian</option>
+              <option>French</option><option>German</option><option>Portuguese</option>
+            </select>
+          </label>
+        </div>
+        <label>My goal <input name="goal" placeholder="Erasmus, travel, work..."></label>
+        <button type="submit" class="btn primary wide">Start</button>
+      </form>
+    </div>
   </section>
 
   <main>
     <!-- TALK -->
-    <section id="tab-talk" class="panel">
-      <div id="talk-setup">
-        <label>Scenario
-          <select id="scenario">
-            <option>free conversation</option>
-            <option>ordering at a restaurant</option>
-            <option>renting a flat</option>
-            <option>telling a friend about your weekend</option>
-            <option>asking for directions</option>
-          </select>
-        </label>
-        <button id="start-session" class="primary">Start session</button>
-      </div>
-
-      <div id="talk-live" class="hidden">
-        <div id="chat" class="chat"></div>
-        <div class="controls">
-          <button id="record" class="record" title="Hold to talk">Hold to talk</button>
-          <form id="text-form" class="text-form">
-            <input id="text-input" placeholder="...or type here">
-            <button type="submit">Send</button>
-          </form>
-          <button id="end-session" class="secondary">End session</button>
+    <section id="tab-talk" class="view">
+      <div id="talk-setup" class="setup">
+        <canvas id="orb-hero" class="orb-hero" aria-hidden="true"></canvas>
+        <p class="eyebrow">New session</p>
+        <h1 class="title">What do you want to practise?</h1>
+        <p class="step-label">Language</p>
+        <div id="language-picker" class="chips" role="radiogroup" aria-label="Language"></div>
+        <p class="step-label">Topic</p>
+        <div id="scenarios" class="scenario-grid">
+          <button class="scenario selected" data-scenario="free conversation">
+            <strong>Free conversation</strong><span>Chat about anything</span></button>
+          <button class="scenario" data-scenario="ordering at a restaurant">
+            <strong>At a restaurant</strong><span>Menu, allergies, the bill</span></button>
+          <button class="scenario" data-scenario="renting a flat">
+            <strong>Renting a flat</strong><span>Rooms, rent, landlords</span></button>
+          <button class="scenario" data-scenario="telling a friend about your weekend">
+            <strong>Your weekend</strong><span>Tell a friend what you did</span></button>
+          <button class="scenario" data-scenario="asking for directions">
+            <strong>Directions</strong><span>Streets, stations, maps</span></button>
         </div>
-        <p id="talk-status" class="status"></p>
+        <button id="start-session" class="btn primary big">Start session</button>
+        <p id="setup-status" class="status"></p>
       </div>
 
-      <div id="talk-summary" class="hidden">
-        <h2>Session summary</h2>
-        <p id="summary-text"></p>
-        <h3>Your mistakes</h3>
-        <ul id="summary-errors" class="errors"></ul>
-        <h3>New cards</h3>
-        <p class="hint">Remove any card you don't want. The rest are in your Review tab.</p>
-        <ul id="summary-cards" class="cards"></ul>
-        <button id="new-session" class="primary">New session</button>
+      <div id="talk-live" class="live hidden">
+        <p id="live-language" class="live-language"></p>
+        <div class="stage">
+          <canvas id="orb" class="orb" aria-hidden="true"></canvas>
+          <p id="orb-state" class="orb-state">Ready</p>
+        </div>
+
+        <div class="captions" aria-live="polite">
+          <p id="caption-user" class="caption-user"></p>
+          <p id="caption-tutor" class="caption-tutor"></p>
+        </div>
+
+        <div class="dock">
+          <button id="toggle-transcript" class="btn ghost round" title="Transcript" aria-label="Show transcript">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          </button>
+          <button id="record" class="mic" title="Hold to talk" aria-label="Hold to talk">
+            <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </button>
+          <button id="end-session" class="btn ghost round" title="End session" aria-label="End session">
+            <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          </button>
+        </div>
+        <p class="hint">Hold the button or the <kbd>space</kbd> bar to talk</p>
+
+        <form id="text-form" class="text-form">
+          <input id="text-input" placeholder="...or type here" autocomplete="off">
+          <button type="submit" class="btn ghost">Send</button>
+        </form>
+        <p id="talk-status" class="status"></p>
+
+        <aside id="transcript" class="transcript glass" aria-hidden="true">
+          <div class="transcript-head">
+            <span>Transcript</span>
+            <button id="close-transcript" class="btn ghost round small" aria-label="Close transcript">
+              <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <div id="chat" class="chat"></div>
+        </aside>
+      </div>
+
+      <div id="talk-summary" class="summary hidden">
+        <div class="glass panel">
+          <p class="eyebrow">Session complete</p>
+          <h1 class="title small">How it went</h1>
+          <p id="summary-text" class="summary-text"></p>
+        </div>
+        <div class="glass panel">
+          <h2>Your mistakes</h2>
+          <ul id="summary-errors" class="list errors"></ul>
+        </div>
+        <div class="glass panel">
+          <h2>New cards</h2>
+          <p class="hint left">Remove any card you don't want. The rest are in your Review tab.</p>
+          <ul id="summary-cards" class="list cards"></ul>
+        </div>
+        <button id="new-session" class="btn primary big">New session</button>
       </div>
     </section>
 
     <!-- REVIEW -->
-    <section id="tab-review" class="panel hidden">
-      <div id="review-empty" class="hidden"><p>Nothing to review right now. Come back later!</p></div>
-      <div id="review-card" class="flashcard hidden">
-        <p class="kind" id="card-kind"></p>
-        <p class="front" id="card-front"></p>
-        <div id="card-back-wrap" class="hidden">
-          <p class="back" id="card-back"></p>
-          <p class="explanation" id="card-explanation"></p>
+    <section id="tab-review" class="view hidden">
+      <div id="review-languages" class="chips center"></div>
+      <div id="review-empty" class="glass panel empty hidden">
+        <h2>All caught up</h2>
+        <p class="muted">Nothing to review right now. Come back later!</p>
+      </div>
+      <div id="review-card" class="review hidden">
+        <div id="flashcard" class="flashcard">
+          <div class="face front glass">
+            <p class="kind" id="card-kind"></p>
+            <p class="front-text" id="card-front"></p>
+            <form id="answer-form" class="answer-form">
+              <input id="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+              <button type="submit" class="btn primary">Check</button>
+            </form>
+          </div>
+          <div id="card-back-wrap" class="face back glass">
+            <p id="answer-feedback" class="feedback"></p>
+            <p class="back-text" id="card-back"></p>
+            <p class="sentence" id="card-sentence"></p>
+            <p class="explanation" id="card-explanation"></p>
+          </div>
         </div>
         <div class="card-actions">
-          <button id="play-audio" class="secondary">Play audio</button>
-          <button id="show-answer" class="primary">Show answer</button>
+          <button id="play-audio" class="btn ghost">Play audio</button>
+          <button id="show-answer" class="btn ghost">I don't know: show answer</button>
         </div>
+        <p id="rating-help" class="hint hidden">How well did you know it? This decides when the card comes back.</p>
         <div id="ratings" class="ratings hidden">
-          <button data-rating="1" class="again">Again</button>
-          <button data-rating="2" class="hard">Hard</button>
-          <button data-rating="3" class="good">Good</button>
-          <button data-rating="4" class="easy">Easy</button>
+          <button data-rating="1" class="again" title="Didn't know it: see it again in a few minutes">Again <small>1</small></button>
+          <button data-rating="2" class="hard" title="Got it with difficulty">Hard <small>2</small></button>
+          <button data-rating="3" class="good" title="Got it">Good <small>3</small></button>
+          <button data-rating="4" class="easy" title="Too easy: wait longer">Easy <small>4</small></button>
         </div>
       </div>
     </section>
 
     <!-- PROGRESS -->
-    <section id="tab-progress" class="panel hidden">
+    <section id="tab-progress" class="view hidden">
+      <div id="progress-languages" class="chips center"></div>
+      <h1 id="progress-title" class="title small center"></h1>
       <div class="stats" id="stats"></div>
-      <h3>Most frequent mistakes</h3>
-      <ul id="top-errors" class="errors"></ul>
+
+      <div class="glass panel">
+        <h2>Most frequent mistakes</h2>
+        <p class="hint left">Similar mistakes are grouped together, even when they were explained with different words.</p>
+        <ul id="top-errors" class="list errors"></ul>
+      </div>
+
+      <div class="glass panel">
+        <h2>Search what you said</h2>
+        <form id="memory-form" class="text-form">
+          <input id="memory-input" placeholder="e.g. prenotare, mia amica, il mio cane...">
+          <button type="submit" class="btn primary">Search</button>
+        </form>
+        <div id="memory-results" class="memory-results"></div>
+      </div>
     </section>
   </main>
 
+  <script>
+    // Opened by double-clicking index.html: browsers block the app's scripts on file:// pages.
+    if (location.protocol === "file:") {
+      document.body.innerHTML = '<div class="file-warning"><h1>Open the app from the server</h1>' +
+        '<p>Start the backend (<code>cd backend &amp;&amp; uvicorn api:app --reload</code>), then open ' +
+        '<a href="http://localhost:8000">http://localhost:8000</a>.</p></div>';
+    }
+  </script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

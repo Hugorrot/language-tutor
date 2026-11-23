@@ -6,8 +6,10 @@ from data import db
 from tutor import llm, planner
 
 
-def build_system_prompt(learner: dict, session: dict) -> str:
+def build_system_prompt(learner: dict, session: dict, extra_memory: str = "") -> str:
+    """extra_memory: memories retrieved for this turn (see planner.turn_memory)."""
     targets = json.loads(session.get("targets") or "[]")
+    memory = "\n\n".join(part for part in (session.get("memory") or "", extra_memory) if part)
     return llm.load_prompt(
         "tutor_system",
         name=learner["name"],
@@ -18,7 +20,7 @@ def build_system_prompt(learner: dict, session: dict) -> str:
         scenario=session["scenario"],
         max_sentences=config.MAX_TUTOR_SENTENCES,
         targets_block=planner.targets_block(targets),
-        memory_block=planner.memory_block(learner["id"]),
+        memory_block=memory,
     )
 
 
@@ -36,9 +38,10 @@ def opening_line(learner: dict, session: dict) -> str:
     return llm.call_llm(messages)
 
 
-def tutor_reply(learner: dict, session: dict) -> str:
+def tutor_reply(learner: dict, session: dict, extra_memory: str = "") -> str:
     """Reply to the latest learner message, using the whole session history."""
-    messages = [{"role": "system", "content": build_system_prompt(learner, session)}] + _history(session["id"])
+    system = build_system_prompt(learner, session, extra_memory)
+    messages = [{"role": "system", "content": system}] + _history(session["id"])
     return llm.call_llm(messages)
 
 

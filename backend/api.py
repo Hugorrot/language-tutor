@@ -14,6 +14,7 @@ from analysis.summary import session_summary
 from cards import scheduler
 from cards.generator import generate_cards
 from data import db
+from memory import concepts, retrieval
 from schemas import LearnerCreate, ReviewAnswer, SessionEnd, SessionStart
 from tutor import conversation, planner
 from tutor.llm import Timer
@@ -29,6 +30,13 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.on_event("startup")
 def startup() -> None:
     db.init_db()
+    retrieval.backfill_languages()
+
+
+def _language_or_400(language: str) -> str:
+    if language not in config.SUPPORTED_LANGUAGES:
+        raise HTTPException(400, f"Unsupported language: {language}")
+    return language
 
 
 def _learner_or_404(learner_id: int) -> dict:
@@ -60,32 +68,45 @@ def create_learner(body: LearnerCreate):
 def get_learner(learner_id: int):
     l = _learner_or_404(learner_id)
     return {"learner_id": l["id"], "name": l["name"], "target_language": l["target_language"],
-            "explanation_language": l["explanation_language"], "goal": l["goal"], "level": l["level"]}
+            "explanation_language": l["explanation_language"], "goal": l["goal"],
+            "level": db.get_level(l["id"], l["target_language"]),
+            "languages": db.languages_of(l["id"]),
+            "supported_languages": list(config.SUPPORTED_LANGUAGES)}
 
 
 # ---------------- Conversation ----------------
 
 @api.post("/session/start")
 def start_session(body: SessionStart):
-    learner = _learner_or_404(body.learner_id)
-    session_id = db.execute("INSERT INTO sessions (learner_id, scenario) VALUES (?, ?)",
-                            (learner["id"], body.scenario))
-    targets = planner.plan_targets(learner["id"])
-    planner.save_targets(session_id, targets)
+    _learner_or_404(body.learner_id)
+    language = _language_or_400(body.target_language) if body.target_language else None
+    learner = db.learner_in(body.learner_id, language)
+    language = learner["target_language"]
+    # Remember the choice: next time the app opens on this language.
+    db.execute("UPDATE learners SET target_language = ? WHERE id = ?", (language, learner["id"]))
+    session_id = db.execute("INSERT INTO sessions (learner_id, scenario, language) VALUES (?, ?, ?)",
+                            (learner["id"], body.scenario, language))
+    plan = planner.plan(learner["id"], language)
+    planner.save_plan(session_id, plan)
+    # Memory is retrieved once here and stored, so later turns don't repeat the search.
+    db.execute("UPDATE sessions SET memory = ? WHERE id = ?",
+               (planner.memory_block(learner["id"], language, body.scenario), session_id))
     session = db.get_session(session_id)
+    targets = [t["text"] for t in plan]
 
     tutor_text = conversation.opening_line(learner, session)
     db.add_message(session_id, "tutor", tutor_text)
     audio_b64 = tts.text_to_speech_b64(tutor_text, learner["target_language"])
-    return {"session_id": session_id, "tutor_text": tutor_text, "audio_b64": audio_b64, "targets": targets}
+    return {"session_id": session_id, "tutor_text": tutor_text, "audio_b64": audio_b64, "targets": targets,
+            "target_language": language, "level": learner["level"]}
 
 
 @api.post("/session/turn")
 async def session_turn(session_id: int = Form(...), text: str | None = Form(None),
                        audio: UploadFile | None = File(None)):
     session = _session_or_404(session_id)
-    learner = db.get_learner(session["learner_id"])
-    timings = {"asr": 0, "llm": 0, "tts": 0}
+    learner = db.learner_for_session(session)
+    timings = {"asr": 0, "memory": 0, "llm": 0, "tts": 0}
 
     with Timer() as total:
         if audio is not None:
@@ -98,11 +119,17 @@ async def session_turn(session_id: int = Form(...), text: str | None = Form(None
             user_text = text.strip()
         else:
             raise HTTPException(400, "Send either 'audio' or 'text'")
+        if not user_text:
+            raise HTTPException(422, "I couldn't hear anything. Hold the button while you speak, a bit closer to the mic.")
 
         db.add_message(session_id, "user", user_text)
 
         with Timer() as t:
-            tutor_text = conversation.tutor_reply(learner, session)
+            extra_memory = planner.turn_memory(learner["id"], learner["target_language"], user_text)
+        timings["memory"] = t.ms
+
+        with Timer() as t:
+            tutor_text = conversation.tutor_reply(learner, session, extra_memory)
         timings["llm"] = t.ms
 
         with Timer() as t:
@@ -117,7 +144,7 @@ async def session_turn(session_id: int = Form(...), text: str | None = Form(None
 @api.post("/session/end")
 def end_session(body: SessionEnd):
     session = _session_or_404(body.session_id)
-    learner = db.get_learner(session["learner_id"])
+    learner = db.learner_for_session(session)
     lang, expl, level = learner["target_language"], learner["explanation_language"], learner["level"]
 
     transcript = conversation.transcript_text(session["id"])
@@ -129,33 +156,55 @@ def end_session(body: SessionEnd):
     errors = extract_errors(transcript, lang, expl, level)
     error_ids = [
         db.execute(
-            """INSERT INTO errors (session_id, learner_id, type, original, correction, rule, target_word)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (session["id"], learner["id"], e.type, e.original, e.correction, e.rule, e.target_word),
+            """INSERT INTO errors (session_id, learner_id, language, type, original, correction, rule, target_word)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (session["id"], learner["id"], lang, e.type, e.original, e.correction, e.rule, e.target_word),
         )
         for e in errors
     ]
 
-    # 2. Cards -> database, each with a fresh FSRS state (due now)
-    drafts = generate_cards(errors, error_ids, lang, expl, level)
+    # 2. Same mistake as before? Group it with past errors (vector DB), so it is counted once.
+    concept_ids = concepts.assign_concepts(learner["id"], lang, session["id"], errors, error_ids)
+
+    # 3. Cards. With the vector DB, a mistake that already has cards gets those cards back
+    #    for review instead of near-duplicate new ones.
+    to_card = list(zip(errors, error_ids))
+    if config.MEMORY_MODE == "vector":
+        known = concepts.concepts_with_cards(learner["id"], lang, session["id"])
+        concepts.refresh_cards(learner["id"], known & set(concept_ids), scheduler.now_iso())
+        to_card = [(e, i) for e, i, c in zip(errors, error_ids, concept_ids) if c not in known]
+    drafts = generate_cards([e for e, _ in to_card], [i for _, i in to_card], lang, expl, level)
     cards_out = []
     for c in drafts:
         state, due = scheduler.new_card_state()
         card_id = db.execute(
-            """INSERT INTO cards (learner_id, error_id, kind, front, back, explanation, fsrs_state, due)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (learner["id"], c.error_id, c.kind, c.front, c.back, c.explanation, state, due),
+            """INSERT INTO cards (learner_id, error_id, language, kind, front, back, explanation, fsrs_state, due)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (learner["id"], c.error_id, lang, c.kind, c.front, c.back, c.explanation, state, due),
         )
         cards_out.append({"card_id": card_id, "kind": c.kind, "front": c.front,
                           "back": c.back, "explanation": c.explanation})
 
-    # 3. Summary
+    # 4. Summary
     summary = session_summary(transcript, lang, expl)
     db.execute("UPDATE sessions SET summary = ?, ended_at = datetime('now') WHERE id = ?",
                (summary, session["id"]))
 
-    # TODO (tutor & planner): mark old errors as fixed if the learner used the structure
-    # correctly in this session (compare this session's targets with the new errors).
+    # 5. Fixed mistakes: a targeted concept that did not come back is marked fixed, but only
+    #    if the session was long enough and, for single-word targets, the learner used the word.
+    learner_turns = [m["text"].lower() for m in db.get_messages(session["id"]) if m["role"] == "user"]
+    if config.MEMORY_MODE == "vector" and len(learner_turns) >= config.MIN_TURNS_FOR_FIXED:
+        targeted = set(json.loads(session.get("target_concepts") or "[]"))
+        practised = set()
+        for cid in targeted:
+            word = db.query_one("SELECT target_word FROM errors WHERE id = ?", (cid,))
+            word = (word or {}).get("target_word")
+            if not word or len(word.split()) > 2 or any(word.lower() in t for t in learner_turns):
+                practised.add(cid)
+        concepts.update_fixed(learner["id"], targeted, set(concept_ids), practised)
+
+    # 6. Long-term memory: what the learner said and the summary go into the vector DB.
+    retrieval.index_session(learner["id"], lang, session["id"], summary)
 
     return {"summary": summary,
             "errors": [e.model_dump() for e in errors[: config.MAX_ERRORS_IN_SUMMARY]],
@@ -180,22 +229,28 @@ def _card_audio_text(card: dict) -> str:
 
 
 @api.get("/review/due")
-def review_due(learner_id: int):
+def review_due(learner_id: int, language: str | None = None):
+    """Due cards. Without `language`: all languages; due_by_language tells how many per language."""
     _learner_or_404(learner_id)
+    now = scheduler.now_iso()
+    lang_filter = "AND language = ?" if language else ""
+    params = (learner_id, now, language) if language else (learner_id, now)
     rows = db.query(
-        """SELECT id, kind, front, back, explanation FROM cards
-           WHERE learner_id = ? AND deleted = 0 AND due <= ? ORDER BY due LIMIT 20""",
-        (learner_id, scheduler.now_iso()),
-    )
+        f"""SELECT id, kind, front, back, explanation, language FROM cards
+            WHERE learner_id = ? AND deleted = 0 AND due <= ? {lang_filter} ORDER BY due LIMIT 20""", params)
+    by_lang = db.query("""SELECT language, COUNT(*) AS n FROM cards WHERE learner_id = ? AND deleted = 0 AND due <= ?
+                          GROUP BY language""", (learner_id, now))
     cards = [{"card_id": r["id"], "kind": r["kind"], "front": r["front"], "back": r["back"],
-              "explanation": r["explanation"]} for r in rows]
-    return {"cards": cards, "due_count": len(cards)}
+              "explanation": r["explanation"], "language": r["language"]} for r in rows]
+    return {"cards": cards, "due_count": sum(r["n"] for r in by_lang) if not language else len(cards),
+            "due_by_language": {r["language"]: r["n"] for r in by_lang}}
 
 
 @api.get("/cards/{card_id}/audio")
 def card_audio(card_id: int):
     card = db.query_one(
-        "SELECT c.*, l.target_language FROM cards c JOIN learners l ON l.id = c.learner_id WHERE c.id = ?",
+        """SELECT c.*, COALESCE(c.language, l.target_language) AS target_language
+           FROM cards c JOIN learners l ON l.id = c.learner_id WHERE c.id = ?""",
         (card_id,),
     )
     if not card:
@@ -217,34 +272,52 @@ def review_answer(body: ReviewAnswer):
 # ---------------- Progress ----------------
 
 @api.get("/progress")
-def progress(learner_id: int):
-    learner = _learner_or_404(learner_id)
+def progress(learner_id: int, language: str | None = None):
+    """Stats for one language (default: the language of the learner's last session)."""
+    _learner_or_404(learner_id)
+    learner = db.learner_in(learner_id, language)
+    lang = learner["target_language"]
     sessions = db.query_one(
-        "SELECT COUNT(*) AS n FROM sessions WHERE learner_id = ? AND ended_at IS NOT NULL", (learner_id,))["n"]
+        "SELECT COUNT(*) AS n FROM sessions WHERE learner_id = ? AND language = ? AND ended_at IS NOT NULL",
+        (learner_id, lang))["n"]
     words = db.query_one(
         """SELECT COALESCE(SUM(LENGTH(m.text) - LENGTH(REPLACE(m.text, ' ', '')) + 1), 0) AS w
            FROM messages m JOIN sessions s ON s.id = m.session_id
-           WHERE s.learner_id = ? AND m.role = 'user'""", (learner_id,))["w"]
+           WHERE s.learner_id = ? AND s.language = ? AND m.role = 'user'""", (learner_id, lang))["w"]
     cards_total = db.query_one(
-        "SELECT COUNT(*) AS n FROM cards WHERE learner_id = ? AND deleted = 0", (learner_id,))["n"]
+        "SELECT COUNT(*) AS n FROM cards WHERE learner_id = ? AND language = ? AND deleted = 0",
+        (learner_id, lang))["n"]
     cards_due = db.query_one(
-        "SELECT COUNT(*) AS n FROM cards WHERE learner_id = ? AND deleted = 0 AND due <= ?",
-        (learner_id, scheduler.now_iso()))["n"]
+        "SELECT COUNT(*) AS n FROM cards WHERE learner_id = ? AND language = ? AND deleted = 0 AND due <= ?",
+        (learner_id, lang, scheduler.now_iso()))["n"]
     acc = db.query_one(
         """SELECT AVG(CASE WHEN r.rating >= 3 THEN 1.0 ELSE 0.0 END) AS a FROM reviews r
-           JOIN cards c ON c.id = r.card_id WHERE c.learner_id = ?""", (learner_id,))["a"]
-    top_errors = db.query(
-        """SELECT rule, COUNT(*) AS count, MIN(fixed) AS fixed FROM errors
-           WHERE learner_id = ? GROUP BY rule ORDER BY count DESC LIMIT 5""", (learner_id,))
+           JOIN cards c ON c.id = r.card_id WHERE c.learner_id = ? AND c.language = ?""", (learner_id, lang))["a"]
+    by = "concept" if config.MEMORY_MODE == "vector" else "rule"
+    top_errors = concepts.top_mistakes(learner_id, lang, limit=5, by=by)
     return {
+        "language": lang,
+        "languages": db.languages_of(learner_id),
         "sessions": sessions,
         "minutes_spoken": round(words / 100),  # rough estimate: ~100 spoken words per minute
         "level": learner["level"],
         "cards_total": cards_total,
         "cards_due": cards_due,
         "review_accuracy": round(acc, 2) if acc is not None else None,
-        "top_errors": [{"rule": e["rule"], "count": e["count"], "fixed": bool(e["fixed"])} for e in top_errors],
+        "top_errors": [{"rule": e["rule"], "count": e["count"], "sessions": e["sessions"],
+                        "fixed": bool(e["fixed"])} for e in top_errors],
     }
+
+
+# ---------------- Memory ----------------
+
+@api.get("/memory/search")
+def memory_search(learner_id: int, q: str, language: str | None = None):
+    """How often the learner said something: exact count + similar sentences from the vector DB."""
+    _learner_or_404(learner_id)
+    if not q.strip():
+        raise HTTPException(400, "Empty query")
+    return retrieval.count_said(learner_id, q, language)
 
 
 app.include_router(api)

@@ -27,8 +27,12 @@ Response:
 Response:
 ```json
 { "learner_id": 1, "name": "Lucía", "target_language": "Italian", "explanation_language": "English",
-  "goal": "Erasmus", "level": "A2" }
+  "goal": "Erasmus", "level": "A2", "languages": ["Italian", "French"],
+  "supported_languages": ["Italian", "Spanish", "French", "English", "German", "Portuguese"] }
 ```
+A learner can practise several languages. `target_language` is the language of their most recent
+session (the app opens on it), `level` is their level in that language, `languages` are the ones
+they have practised.
 
 ---
 
@@ -37,15 +41,16 @@ Response:
 ### `POST /api/session/start`
 Starts a session. The planner picks today's targets (due cards, failed cards, weak points) and the tutor greets.
 
-Request:
+Request (`target_language` optional: default = the learner's last language; 400 if not supported):
 ```json
-{ "learner_id": 1, "scenario": "ordering at a restaurant" }
+{ "learner_id": 1, "scenario": "ordering at a restaurant", "target_language": "Italian" }
 ```
 Response:
 ```json
 { "session_id": 12, "tutor_text": "Ciao Lucía! Bentornata...", "audio_b64": "<mp3 base64>",
-  "targets": ["amica", "prenotare", "possessives with article"] }
+  "targets": ["amica", "prenotare", "possessives with article"], "target_language": "Italian", "level": "A2" }
 ```
+Everything in the session (errors, cards, memory, targets) belongs to that language.
 
 ### `POST /api/session/turn`
 One learner turn. `multipart/form-data` with fields:
@@ -57,8 +62,9 @@ Response:
 { "user_text": "Io sono andato al cinema con mia amica",
   "tutor_text": "Ah, sei andato al cinema con la tua amica! Che film avete visto?",
   "audio_b64": "<mp3 base64>",
-  "timings_ms": { "asr": 420, "llm": 610, "tts": 380, "total": 1410 } }
+  "timings_ms": { "asr": 420, "memory": 150, "llm": 610, "tts": 380, "total": 1560 } }
 ```
+`memory` = time to retrieve related memories from the vector DB for this turn (0 when `MEMORY_MODE` is not `vector`).
 
 ### `POST /api/session/end`
 Ends the session: extracts errors, updates the learner profile, generates cards.
@@ -83,11 +89,14 @@ The learner removes a generated card they don't want. Response: `{ "ok": true }`
 
 ## Review tab
 
-### `GET /api/review/due?learner_id=1`
+### `GET /api/review/due?learner_id=1[&language=Italian]`
+Without `language`: due cards of all languages. `due_by_language` always counts all of them.
+
 Response:
 ```json
-{ "cards": [ { "card_id": 40, "kind": "cloze", "front": "...", "back": "...", "explanation": "..." } ],
-  "due_count": 1 }
+{ "cards": [ { "card_id": 40, "kind": "cloze", "front": "...", "back": "...", "explanation": "...",
+               "language": "Italian" } ],
+  "due_count": 1, "due_by_language": { "Italian": 1 } }
 ```
 
 ### `GET /api/cards/{card_id}/audio`
@@ -112,10 +121,29 @@ Response:
 
 ## Progress tab
 
-### `GET /api/progress?learner_id=1`
+### `GET /api/progress?learner_id=1[&language=Italian]`
+Stats for one language (default: the learner's last language).
+
 Response:
 ```json
-{ "sessions": 4, "minutes_spoken": 38, "level": "A2",
+{ "language": "Italian", "languages": ["Italian", "French"],
+  "sessions": 4, "minutes_spoken": 38, "level": "A2",
   "cards_total": 52, "cards_due": 6, "review_accuracy": 0.78,
-  "top_errors": [ { "rule": "Possessives take an article", "count": 5, "fixed": false } ] }
+  "top_errors": [ { "rule": "Possessives take an article", "count": 5, "sessions": 4, "fixed": false } ] }
+```
+Each entry is one recurring mistake ("concept"): reworded versions of the same mistake are grouped by
+the vector DB. `rule` is the latest wording, `count` how many times it was found, `sessions` in how many sessions.
+
+---
+
+## Memory
+
+### `GET /api/memory/search?learner_id=1&q=amica[&language=Italian]`
+How often the learner said something: an exact count (text search) plus the most similar things
+they said (vector DB).
+
+Response:
+```json
+{ "query": "amica", "exact_count": 3,
+  "similar": [ { "text": "Sono andata al cinema con mia amica Giulia", "similarity": 0.71, "session_id": 1 } ] }
 ```

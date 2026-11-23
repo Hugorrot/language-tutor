@@ -11,6 +11,7 @@ venv/
 # Local data
 backend/data/tutor.db
 backend/data/audio_cache/
+backend/data/chroma/
 
 # OS / editors
 .DS_Store
