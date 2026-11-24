@@ -15,7 +15,7 @@ from cards import scheduler
 from cards.generator import generate_cards
 from data import db
 from memory import concepts, retrieval
-from schemas import LearnerCreate, ReviewAnswer, SessionEnd, SessionStart
+from schemas import LearnerCreate, LearnerUpdate, ReviewAnswer, SessionEnd, SessionStart
 from tutor import conversation, planner
 from tutor.llm import Timer
 from voice import asr, tts
@@ -72,6 +72,19 @@ def get_learner(learner_id: int):
             "level": db.get_level(l["id"], l["target_language"]),
             "languages": db.languages_of(l["id"]),
             "supported_languages": list(config.SUPPORTED_LANGUAGES)}
+
+
+@api.patch("/learner/{learner_id}")
+def update_learner(learner_id: int, body: LearnerUpdate):
+    """Change profile settings, e.g. the explanation language. Affects new summaries, rules and cards;
+    what was already generated stays in the old language."""
+    _learner_or_404(learner_id)
+    changes = body.model_dump(exclude_none=True)
+    if "explanation_language" in changes:
+        _language_or_400(changes["explanation_language"])
+    for field, value in changes.items():          # field names come from the schema, not the user
+        db.execute(f"UPDATE learners SET {field} = ? WHERE id = ?", (value, learner_id))
+    return get_learner(learner_id)
 
 
 # ---------------- Conversation ----------------
@@ -228,6 +241,16 @@ def _card_audio_text(card: dict) -> str:
     return card["front"]
 
 
+def _you_said(session_id: int | None, mistake: str | None) -> str | None:
+    """The learner's full sentence that contained the mistake, so a card has its context."""
+    if not session_id or not mistake:
+        return mistake
+    row = db.query_one(
+        """SELECT text FROM messages WHERE session_id = ? AND role = 'user' AND INSTR(LOWER(text), LOWER(?)) > 0
+           ORDER BY id LIMIT 1""", (session_id, mistake))
+    return row["text"] if row else mistake
+
+
 @api.get("/review/due")
 def review_due(learner_id: int, language: str | None = None):
     """Due cards. Without `language`: all languages; due_by_language tells how many per language."""
@@ -236,12 +259,16 @@ def review_due(learner_id: int, language: str | None = None):
     lang_filter = "AND language = ?" if language else ""
     params = (learner_id, now, language) if language else (learner_id, now)
     rows = db.query(
-        f"""SELECT id, kind, front, back, explanation, language FROM cards
-            WHERE learner_id = ? AND deleted = 0 AND due <= ? {lang_filter} ORDER BY due LIMIT 20""", params)
+        f"""SELECT c.id, c.kind, c.front, c.back, c.explanation, c.language,
+                   e.original AS mistake, e.session_id AS error_session
+            FROM cards c LEFT JOIN errors e ON e.id = c.error_id
+            WHERE c.learner_id = ? AND c.deleted = 0 AND c.due <= ? {lang_filter.replace("language", "c.language")}
+            ORDER BY c.due LIMIT 20""", params)
     by_lang = db.query("""SELECT language, COUNT(*) AS n FROM cards WHERE learner_id = ? AND deleted = 0 AND due <= ?
                           GROUP BY language""", (learner_id, now))
     cards = [{"card_id": r["id"], "kind": r["kind"], "front": r["front"], "back": r["back"],
-              "explanation": r["explanation"], "language": r["language"]} for r in rows]
+              "explanation": r["explanation"], "language": r["language"],
+              "mistake": r["mistake"], "you_said": _you_said(r["error_session"], r["mistake"])} for r in rows]
     return {"cards": cards, "due_count": sum(r["n"] for r in by_lang) if not language else len(cards),
             "due_by_language": {r["language"]: r["n"] for r in by_lang}}
 
@@ -305,8 +332,26 @@ def progress(learner_id: int, language: str | None = None):
         "cards_due": cards_due,
         "review_accuracy": round(acc, 2) if acc is not None else None,
         "top_errors": [{"rule": e["rule"], "count": e["count"], "sessions": e["sessions"],
-                        "fixed": bool(e["fixed"])} for e in top_errors],
+                        "fixed": bool(e["fixed"]), "concept_id": e["concept_id"]} for e in top_errors],
     }
+
+
+@api.get("/mistakes/{concept_id}")
+def mistake_occurrences(concept_id: int, learner_id: int):
+    """Every time the learner made one recurring mistake (one concept), with the sentence they said.
+    The concept groups reworded versions of the same mistake (vector DB), so this is
+    "how many times, and where, did I get this wrong?"."""
+    _learner_or_404(learner_id)
+    rows = db.query(
+        """SELECT e.original, e.correction, e.rule, e.session_id, s.started_at
+           FROM errors e JOIN sessions s ON s.id = e.session_id
+           WHERE e.learner_id = ? AND e.concept_id = ? ORDER BY e.id DESC""",
+        (learner_id, concept_id))
+    if not rows:
+        raise HTTPException(404, "Mistake not found")
+    return {"concept_id": concept_id, "count": len(rows), "occurrences": [
+        {"original": r["original"], "correction": r["correction"], "rule": r["rule"],
+         "you_said": _you_said(r["session_id"], r["original"]), "date": r["started_at"]} for r in rows]}
 
 
 # ---------------- Memory ----------------

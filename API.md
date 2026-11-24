@@ -34,6 +34,13 @@ A learner can practise several languages. `target_language` is the language of t
 session (the app opens on it), `level` is their level in that language, `languages` are the ones
 they have practised.
 
+### `PATCH /api/learner/{learner_id}`
+Change profile settings. Send only what changes. Returns the learner like `GET`.
+```json
+{ "explanation_language": "Italian" }
+```
+A new explanation language is used for new summaries, rules and cards; older ones are not translated.
+
 ---
 
 ## Conversation session
@@ -91,11 +98,14 @@ The learner removes a generated card they don't want. Response: `{ "ok": true }`
 
 ### `GET /api/review/due?learner_id=1[&language=Italian]`
 Without `language`: due cards of all languages. `due_by_language` always counts all of them.
+`mistake` is the learner's wrong words and `you_said` the whole sentence they said in the conversation
+(context for the card; null for cards without an error).
 
 Response:
 ```json
 { "cards": [ { "card_id": 40, "kind": "cloze", "front": "...", "back": "...", "explanation": "...",
-               "language": "Italian" } ],
+               "language": "Italian", "mistake": "con mia amica",
+               "you_said": "Sabato sono andato al cinema con mia amica" } ],
   "due_count": 1, "due_by_language": { "Italian": 1 } }
 ```
 
@@ -132,7 +142,16 @@ Response:
   "top_errors": [ { "rule": "Possessives take an article", "count": 5, "sessions": 4, "fixed": false } ] }
 ```
 Each entry is one recurring mistake ("concept"): reworded versions of the same mistake are grouped by
-the vector DB. `rule` is the latest wording, `count` how many times it was found, `sessions` in how many sessions.
+the vector DB. `rule` is the latest wording, `count` how many times it was found, `sessions` in how many sessions,
+`concept_id` identifies it (null with `MEMORY_MODE=sql`).
+
+### `GET /api/mistakes/{concept_id}?learner_id=1`
+Every time the learner made that mistake, newest first, with the full sentence they said.
+```json
+{ "concept_id": 3, "count": 2, "occurrences": [
+  { "original": "con mia amica", "correction": "con la mia amica", "rule": "Possessives take an article",
+    "you_said": "Sabato sono andato al cinema con mia amica", "date": "2026-11-23 14:15:25" } ] }
+```
 
 ---
 

@@ -2,6 +2,7 @@
 import { api } from "./api.js";
 import { getLanguage, getLearnerId } from "./app.js";
 import { renderChips } from "./ui.js";
+import { getLocale, langName, onUiLanguageChange, t } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 let language = null;      // the language shown; starts on the one being practised
@@ -17,67 +18,97 @@ export async function loadProgress(choice = null) {
   language = p.language;
 
   renderChips($("progress-languages"),
-    p.languages.length > 1 ? p.languages.map((l) => ({ value: l, label: l })) : [],
-    language, (v) => { $("memory-results").innerHTML = ""; loadProgress(v); });
-  $("progress-title").textContent = `${p.language} · Level ${p.level}`;
+    p.languages.length > 1 ? p.languages.map((l) => ({ value: l, label: langName(l) })) : [],
+    language, (v) => { loadProgress(v); });
+  $("progress-title").textContent = t("level_title", { lang: langName(p.language), level: p.level });
 
   const acc = p.review_accuracy === null ? "–" : Math.round(p.review_accuracy * 100) + "%";
   $("stats").innerHTML =
-    stat("Sessions", p.sessions) +
-    stat("Minutes spoken (est.)", p.minutes_spoken) +
-    stat("Review accuracy", acc) +
-    stat("Cards", p.cards_total) +
-    stat("Due now", p.cards_due) +
-    stat("Level", p.level);
+    stat(t("s_sessions"), p.sessions) +
+    stat(t("s_minutes"), p.minutes_spoken) +
+    stat(t("s_accuracy"), acc) +
+    stat(t("s_cards"), p.cards_total) +
+    stat(t("s_due"), p.cards_due) +
+    stat(t("s_level"), p.level);
 
-  $("top-errors").innerHTML = p.top_errors.length ? "" :
-    `<li class="muted">No ${p.language} mistakes yet. Have a conversation first.</li>`;
+  $("top-errors").innerHTML = "";
+  if (!p.top_errors.length) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = t("no_lang_mistakes", { lang: langName(p.language, { inSentence: true }) });
+    $("top-errors").appendChild(li);
+  }
   for (const e of p.top_errors) {
     const li = document.createElement("li");
-    li.className = "mistake";
+    li.className = "mistake-item";
+    const head = document.createElement("button");
+    head.type = "button";
+    head.className = "mistake";
+    head.disabled = e.concept_id == null;
+    head.setAttribute("aria-expanded", "false");
     const rule = document.createElement("span");
     rule.textContent = e.rule;
     const meta = document.createElement("span");
     meta.className = "chip" + (e.fixed ? " fixed" : "");
-    const where = e.sessions > 1 ? ` · ${e.sessions} sessions` : "";
-    meta.textContent = e.fixed ? "fixed" : `${e.count}×${where}`;
-    li.append(rule, meta);
+    const where = e.sessions > 1 ? ` · ${t("in_sessions", { n: e.sessions })}` : "";
+    meta.textContent = e.fixed ? t("fixed") : `${e.count}×${where}`;
+    head.append(rule, meta);
+    const details = document.createElement("ul");
+    details.className = "occurrences hidden";
+    head.onclick = () => toggleOccurrences(e.concept_id, head, details);
+    li.append(head, details);
     $("top-errors").appendChild(li);
   }
 }
 
-// "How many times did I say ...?" Exact count + similar sentences from the vector DB, in this language.
-async function searchMemory(q) {
-  const out = $("memory-results");
-  out.textContent = "Searching...";
+// Every sentence where the learner made this mistake (one concept = the same mistake, even reworded).
+async function toggleOccurrences(conceptId, head, list) {
+  const open = list.classList.toggle("hidden") === false;
+  head.setAttribute("aria-expanded", String(open));
+  if (!open || list.dataset.loaded) return;
+  list.innerHTML = `<li class="muted">${t("loading")}</li>`;
   try {
-    const r = await api.searchMemory(getLearnerId(), q, language);
-    out.innerHTML = "";
-    const head = document.createElement("p");
-    head.className = "memory-count";
-    head.textContent = `You said “${r.query}” ${r.exact_count} time${r.exact_count === 1 ? "" : "s"} in ${language}.`;
-    out.appendChild(head);
-    if (r.similar.length) {
-      const sub = document.createElement("p");
-      sub.className = "hint left";
-      sub.textContent = "Similar things you said:";
-      out.appendChild(sub);
-      const ul = document.createElement("ul");
-      ul.className = "list";
-      for (const s of r.similar) {
-        const li = document.createElement("li");
-        li.textContent = `“${s.text}” (${Math.round(s.similarity * 100)}% similar)`;
-        ul.appendChild(li);
-      }
-      out.appendChild(ul);
-    }
+    const r = await api.mistakeOccurrences(getLearnerId(), conceptId);
+    list.innerHTML = "";
+    for (const o of r.occurrences) list.appendChild(occurrence(o));
+    list.dataset.loaded = "1";
   } catch (err) {
-    out.textContent = err.message;
+    list.innerHTML = "";
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = t("err_prefix") + err.message;
+    list.appendChild(li);
   }
 }
 
-$("memory-form").addEventListener("submit", (ev) => {
-  ev.preventDefault();
-  const q = $("memory-input").value.trim();
-  if (q) searchMemory(q);
+function occurrence(o) {
+  const li = document.createElement("li");
+  const said = document.createElement("p");
+  said.className = "occ-said";
+  const text = o.you_said || o.original;
+  const i = text.toLowerCase().indexOf((o.original || "").toLowerCase());
+  if (i >= 0 && o.original) {
+    const mark = document.createElement("mark");
+    mark.textContent = text.slice(i, i + o.original.length);
+    said.append(`“${text.slice(0, i)}`, mark, `${text.slice(i + o.original.length)}”`);
+  } else {
+    said.textContent = `“${text}”`;
+  }
+  const fix = document.createElement("p");
+  fix.className = "occ-fix";
+  fix.innerHTML = `<span class="original"></span><span class="arrow">→</span><span class="correction"></span><span class="occ-date"></span>`;
+  fix.querySelector(".original").textContent = o.original;
+  fix.querySelector(".correction").textContent = o.correction;
+  const date = new Date(o.date.replace(" ", "T") + "Z");
+  fix.querySelector(".occ-date").textContent = isNaN(date) ? "" :
+    date.toLocaleDateString(getLocale(), { day: "numeric", month: "short", year: "numeric" });
+  const rule = document.createElement("p");
+  rule.className = "rule";
+  rule.textContent = o.rule;
+  li.append(said, fix, rule);
+  return li;
+}
+
+onUiLanguageChange(() => {
+  if (!$("tab-progress").classList.contains("hidden")) loadProgress(language);
 });

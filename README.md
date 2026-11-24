@@ -58,7 +58,7 @@ server (for example the VS Code "Live Server" extension).
 `backend/memory/` adds long-term memory on top of SQLite:
 
 - **Concepts** (`concepts.py`): every new mistake is compared with the learner's past mistakes. If it is
-  similar enough (`CONCEPT_SIMILARITY` in `config.py`) it joins the same concept, so "Possessives take an
+  similar enough (`CONCEPT_SIMILARITY_LOW`/`_HIGH` in `config.py`; in between an LLM decides) it joins the same concept, so "Possessives take an
   article" and "Use the article before possessive adjectives" count as one recurring mistake. Used by the
   Progress tab, the planner, card de-duplication and "fixed" detection.
 - **Retrieval** (`retrieval.py`): what the learner said and the session summaries are embedded at the end

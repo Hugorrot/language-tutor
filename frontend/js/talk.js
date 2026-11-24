@@ -1,9 +1,11 @@
 // Talk tab: pick a scenario, voice/text turns around the orb, end-of-session summary.
 import { api } from "./api.js";
 import { playBase64, readLevels, startRecording, stopPlayback, stopRecording, unlockAudio } from "./audio.js";
-import { getLanguage, getLearner, getLearnerId, refreshDueBadge, setLanguage } from "./app.js";
+import { getExplanationLanguage, getLanguage, getLearner, getLearnerId, refreshDueBadge, setExplanationLanguage,
+         setLanguage } from "./app.js";
 import { createOrb } from "./orb.js";
-import { renderChips } from "./ui.js";
+import { confirmDialog, dialogOpen, renderChips } from "./ui.js";
+import { langName, onUiLanguageChange, t } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 let sessionId = null;
@@ -14,24 +16,35 @@ let language = null;          // chosen in the setup screen
 
 const ALL_LANGUAGES = ["Italian", "Spanish", "French", "German", "Portuguese", "English"];
 
-export function renderLanguagePicker() {
+// keepSelection: redraw (e.g. after an interface language change) without resetting the chosen language
+export function renderLanguagePicker(keepSelection = false) {
   const learner = getLearner();
-  language = getLanguage();
+  if (!keepSelection || !language) language = getLanguage();
   const langs = learner?.supported_languages || ALL_LANGUAGES;
-  renderChips($("language-picker"), langs.map((l) => ({ value: l, label: l })), language, (v) => { language = v; });
+  renderChips($("language-picker"), langs.map((l) => ({ value: l, label: langName(l) })), language, (v) => { language = v; });
+
+  // Explanation language: the interface, summaries, grammar rules and card explanations use it.
+  const sel = $("explanation-language");
+  sel.innerHTML = langs.map((l) => `<option value="${l}">${langName(l)}</option>`).join("");
+  sel.value = getExplanationLanguage();
+}
+
+async function changeExplanationLanguage() {
+  const sel = $("explanation-language");
+  const previous = getExplanationLanguage();
+  try {
+    await setExplanationLanguage(sel.value);
+    $("setup-status").textContent = t("expl_changed", { lang: langName(sel.value, { inSentence: true }) });
+  } catch (e) {
+    sel.value = previous;
+    $("setup-status").textContent = t("err_prefix") + e.message;
+  }
 }
 let orb = null;
 
-const STATE_LABEL = {
-  idle: "Hold to talk",
-  listening: "Listening…",
-  thinking: "Thinking…",
-  speaking: "Speaking",
-};
-
 function setOrb(state) {
   orb?.setState(state);
-  $("orb-state").textContent = STATE_LABEL[state];
+  $("orb-state").textContent = t(`st_${state}`);
   $("orb-state").dataset.state = state;
   $("record").classList.toggle("recording", state === "listening");
   $("record").disabled = state === "thinking";
@@ -69,13 +82,15 @@ async function speak(b64) {
 async function startSession() {
   $("setup-status").textContent = "";
   $("start-session").disabled = true;
-  $("start-session").textContent = "Starting…";
+  $("start-session").textContent = t("starting");
   unlockAudio();
   try {
     const res = await api.startSession(getLearnerId(), scenario, language);
     sessionId = res.session_id;
     setLanguage(res.target_language);
-    $("live-language").textContent = `${res.target_language} · ${res.level}`;
+    $("live-language").dataset.lang = res.target_language;
+    $("live-language").dataset.level = res.level;
+    $("live-language").textContent = `${langName(res.target_language)} · ${res.level}`;
     $("chat").innerHTML = "";
     caption("caption-user", "");
     caption("caption-tutor", res.tutor_text);
@@ -84,10 +99,10 @@ async function startSession() {
     addMessage("tutor", res.tutor_text);
     await speak(res.audio_b64);
   } catch (e) {
-    $("setup-status").textContent = "Error: " + e.message;
+    $("setup-status").textContent = t("err_prefix") + e.message;
   } finally {
     $("start-session").disabled = false;
-    $("start-session").textContent = "Start session";
+    $("start-session").textContent = t("start_session");
   }
 }
 
@@ -107,7 +122,7 @@ async function sendTurn(payload) {
     busy = false;
     await speak(res.audio_b64);
   } catch (e) {
-    setStatus(e.message);
+    setStatus(e.status === 422 ? t("cant_hear") : t("err_prefix") + e.message);
     setOrb("idle");
   } finally {
     busy = false;
@@ -124,7 +139,7 @@ async function beginTalking() {
   } catch (err) {
     recording = false;
     setOrb("idle");
-    setStatus("Microphone not available: " + err.message);
+    setStatus(t("mic_unavailable") + err.message);
   }
 }
 
@@ -133,7 +148,7 @@ async function endTalking() {
   recording = false;
   const blob = await stopRecording();
   if (blob && blob.size > 1000) sendTurn({ audioBlob: blob });
-  else { setOrb("idle"); setStatus("Too short: hold while you speak."); }
+  else { setOrb("idle"); setStatus(t("too_short")); }
 }
 
 async function endSession() {
@@ -141,7 +156,7 @@ async function endSession() {
   stopPlayback();
   busy = true;
   setOrb("thinking");
-  setStatus("Analysing your session…");
+  setStatus(t("analysing"));
   try {
     const res = await api.endSession(sessionId);
     sessionId = null;
@@ -150,17 +165,25 @@ async function endSession() {
     toggleTranscript(false);
     refreshDueBadge();
   } catch (e) {
-    setStatus("Error: " + e.message);
+    setStatus(t("err_prefix") + e.message);
   } finally {
     busy = false;
     setOrb("idle");
   }
 }
 
-function renderSummary({ summary, errors, cards }) {
-  $("summary-text").textContent = summary || "No learner messages in this session.";
+function emptyItem(listId, text) {
+  const li = document.createElement("li");
+  li.className = "muted";
+  li.textContent = text;
+  $(listId).appendChild(li);
+}
 
-  $("summary-errors").innerHTML = errors.length ? "" : '<li class="muted">No mistakes found. Bravo!</li>';
+function renderSummary({ summary, errors, cards }) {
+  $("summary-text").textContent = summary || t("no_learner_msgs");
+
+  $("summary-errors").innerHTML = "";
+  if (!errors.length) emptyItem("summary-errors", t("no_mistakes"));
   for (const e of errors) {
     const li = document.createElement("li");
     li.innerHTML = `<div><span class="original"></span><span class="arrow">→</span><span class="correction"></span></div><div class="rule"></div>`;
@@ -170,19 +193,40 @@ function renderSummary({ summary, errors, cards }) {
     $("summary-errors").appendChild(li);
   }
 
-  $("summary-cards").innerHTML = cards.length ? "" :
-    '<li class="muted">No new cards: mistakes you already have cards for were moved back into review.</li>';
+  $("summary-cards").innerHTML = "";
+  if (!cards.length) emptyItem("summary-cards", t("no_new_cards"));
   for (const c of cards) {
     const li = document.createElement("li");
     const text = document.createElement("span");
     text.textContent = `${c.front}  →  ${c.back}`;
     const del = document.createElement("button");
     del.className = "btn ghost small";
-    del.textContent = "Remove";
+    del.textContent = t("remove");
     del.onclick = async () => { await api.deleteCard(c.card_id); li.remove(); refreshDueBadge(); };
     li.append(text, del);
     $("summary-cards").appendChild(li);
   }
+}
+
+// Back to the start screen ("What do you want to practise?").
+// In the middle of a conversation, ask first: leaving drops the session without analysing it.
+export async function goHome() {
+  const live = !$("talk-live").classList.contains("hidden") && sessionId;
+  if (live && !(await confirmDialog({ title: t("leave_title"), body: t("leave_body"),
+                                      ok: t("btn_leave"), cancel: t("btn_cancel") }))) return false;
+  if (live) {
+    stopPlayback();
+    if (recording) { recording = false; stopRecording(); }
+    sessionId = null;
+    busy = false;
+    setOrb("idle");
+  }
+  toggleTranscript(false);
+  setStatus("");
+  $("setup-status").textContent = "";
+  renderLanguagePicker();
+  showView("talk-setup");
+  return true;
 }
 
 function toggleTranscript(open) {
@@ -204,6 +248,7 @@ export function initTalk() {
   });
 
   $("start-session").onclick = startSession;
+  $("explanation-language").onchange = changeExplanationLanguage;
   $("end-session").onclick = endSession;
   $("new-session").onclick = () => { renderLanguagePicker(); showView("talk-setup"); };
   $("toggle-transcript").onclick = () => toggleTranscript();
@@ -228,7 +273,7 @@ export function initTalk() {
   const typing = (e) => ["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName);
   const liveVisible = () => !$("talk-live").classList.contains("hidden") && !$("tab-talk").classList.contains("hidden");
   window.addEventListener("keydown", (e) => {
-    if (e.code !== "Space" || e.repeat || typing(e) || !liveVisible()) return;
+    if (e.code !== "Space" || e.repeat || typing(e) || !liveVisible() || dialogOpen()) return;
     e.preventDefault();
     beginTalking();
   });
@@ -239,4 +284,12 @@ export function initTalk() {
 
   renderLanguagePicker();
   setOrb("idle");
+
+  // Interface language changed: redraw the parts written by JS
+  onUiLanguageChange(() => {
+    renderLanguagePicker(true);
+    setOrb(orb?.state || "idle");
+    const tag = $("live-language");
+    if (tag.dataset.lang) tag.textContent = `${langName(tag.dataset.lang)} · ${tag.dataset.level}`;
+  });
 }

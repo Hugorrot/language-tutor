@@ -5,6 +5,11 @@ The error extractor writes a new free-text rule every session, so the same mista
 exact text would count those as different mistakes. Here each new error is compared with the
 learner's past errors in the vector DB: if it is similar enough, it joins that concept, otherwise it
 starts a new one. A concept's id is the id of its first error.
+
+Similarity alone is not enough: unrelated mistakes that share words ("sport games -> sports games" and
+"Capitalize the names of games") can score above a single threshold. So there are two:
+below CONCEPT_SIMILARITY_LOW it is a new concept, from CONCEPT_SIMILARITY_HIGH it joins without asking,
+and in between (doubtful) an LLM decides whether it is the same mistake.
 """
 import config
 from data import db
@@ -27,6 +32,40 @@ def error_text(error: LearnerError, representation: str = DEFAULT_REPRESENTATION
     return REPRESENTATIONS[representation](error)
 
 
+NEIGHBOURS = 3   # past errors to compare with; in the doubtful band each distinct concept costs one LLM call
+
+
+def same_mistake(a: str, b: str, language: str) -> bool:
+    """LLM check for the doubtful band: are these two errors (as error_text) the same recurring mistake?"""
+    prompt = llm.load_prompt("same_mistake", language=language, a=a, b=b)
+    answer = llm.call_llm_json([{"role": "user", "content": prompt}])
+    return answer.get("same") is True
+
+
+def decide(similarity: float, a: str, b: str, language: str) -> bool:
+    """Same concept? Sure from the similarity at the two ends, the LLM decides in between."""
+    if similarity >= config.CONCEPT_SIMILARITY_HIGH:
+        return True
+    if similarity < config.CONCEPT_SIMILARITY_LOW:
+        return False
+    return same_mistake(a, b, language)
+
+
+def _matching_concept(text: str, nearest: list[dict], language: str) -> int | None:
+    """Concept of the most similar past error that is the same mistake, or None (new concept)."""
+    checked = set()
+    for hit in nearest:                                   # most similar first
+        concept_id = int(hit["concept_id"])
+        if concept_id in checked:
+            continue
+        checked.add(concept_id)
+        if hit["similarity"] < config.CONCEPT_SIMILARITY_LOW:
+            break                                         # the rest are even less similar
+        if decide(hit["similarity"], text, hit["text"], language):
+            return concept_id
+    return None
+
+
 def assign_concepts(learner_id: int, language: str, session_id: int, errors: list[LearnerError],
                     error_ids: list[int]) -> list[int]:
     """Give every new error a concept id, save it in SQLite and in the vector DB."""
@@ -38,11 +77,8 @@ def assign_concepts(learner_id: int, language: str, session_id: int, errors: lis
     for error, error_id, text, vector in zip(errors, error_ids, texts, vectors):
         # Only compare with the same learner's mistakes in the same language
         where = {"$and": [{"learner_id": learner_id}, {"language": language}]}
-        nearest = store.search(COLLECTION, vector, where=where, k=1)
-        if nearest and nearest[0]["similarity"] >= config.CONCEPT_SIMILARITY:
-            concept_id = int(nearest[0]["concept_id"])
-        else:
-            concept_id = error_id
+        nearest = store.search(COLLECTION, vector, where=where, k=NEIGHBOURS)
+        concept_id = _matching_concept(text, nearest, language) or error_id
         concept_ids.append(concept_id)
         db.execute("UPDATE errors SET concept_id = ? WHERE id = ?", (concept_id, error_id))
         # Added one by one, so two errors of the same new concept in one session also match.

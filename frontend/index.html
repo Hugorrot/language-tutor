@@ -15,36 +15,30 @@
     <a class="brand" href="#talk"><span class="brand-mark"></span>Voice Tutor</a>
     <!-- Tabs are real links (#talk, #review, #progress), so the browser's back/forward buttons work -->
     <nav class="tabs">
-      <a class="tab" href="#talk" data-tab="talk">Talk</a>
-      <a class="tab" href="#review" data-tab="review">Review <span id="due-badge" class="badge hidden"></span></a>
-      <a class="tab" href="#progress" data-tab="progress">Progress</a>
+      <a class="tab" href="#talk" data-tab="talk"><span data-i18n="nav_talk">Talk</span></a>
+      <a class="tab" href="#review" data-tab="review"><span data-i18n="nav_review">Review</span> <span id="due-badge" class="badge hidden"></span></a>
+      <a class="tab" href="#progress" data-tab="progress"><span data-i18n="nav_progress">Progress</span></a>
     </nav>
   </header>
 
   <!-- Onboarding (shown once, until a learner exists) -->
   <section id="onboarding" class="onboarding hidden">
     <div class="glass panel narrow">
-      <p class="eyebrow">Welcome</p>
-      <h1 class="title">Let's get you talking.</h1>
-      <p class="muted">A voice tutor that remembers your mistakes and turns them into practice.</p>
+      <p class="eyebrow" data-i18n="welcome">Welcome</p>
+      <h1 class="title" data-i18n="onb_title">Let's get you talking.</h1>
+      <p class="muted" data-i18n="onb_sub">A voice tutor that remembers your mistakes and turns them into practice.</p>
       <form id="onboarding-form" class="form">
-        <label>Your name <input name="name" required autocomplete="given-name"></label>
+        <label><span data-i18n="your_name">Your name</span> <input name="name" required autocomplete="given-name"></label>
         <div class="row">
-          <label>I want to learn
-            <select name="target_language">
-              <option>Italian</option><option>Spanish</option><option>French</option>
-              <option>German</option><option>Portuguese</option><option>English</option>
-            </select>
+          <label><span data-i18n="want_learn">I want to learn</span>
+            <select name="target_language" data-lang-options></select>
           </label>
-          <label>Explanations in
-            <select name="explanation_language">
-              <option>English</option><option>Spanish</option><option>Italian</option>
-              <option>French</option><option>German</option><option>Portuguese</option>
-            </select>
+          <label><span data-i18n="explanations_in">Explanations in</span>
+            <select name="explanation_language" id="onboarding-explanation" data-lang-options></select>
           </label>
         </div>
-        <label>My goal <input name="goal" placeholder="Erasmus, travel, work..."></label>
-        <button type="submit" class="btn primary wide">Start</button>
+        <label><span data-i18n="my_goal">My goal</span> <input name="goal" data-i18n-ph="goal_ph"></label>
+        <button type="submit" class="btn primary wide" data-i18n="start">Start</button>
       </form>
     </div>
   </section>
@@ -54,24 +48,27 @@
     <section id="tab-talk" class="view">
       <div id="talk-setup" class="setup">
         <canvas id="orb-hero" class="orb-hero" aria-hidden="true"></canvas>
-        <p class="eyebrow">New session</p>
-        <h1 class="title">What do you want to practise?</h1>
-        <p class="step-label">Language</p>
+        <p class="eyebrow" data-i18n="new_session">New session</p>
+        <h1 class="title" data-i18n="setup_title">What do you want to practise?</h1>
+        <p class="step-label" data-i18n="language">Language</p>
         <div id="language-picker" class="chips" role="radiogroup" aria-label="Language"></div>
-        <p class="step-label">Topic</p>
+        <label class="inline-setting"><span data-i18n="explanations_in">Explanations in</span>
+          <select id="explanation-language" data-lang-options></select>
+        </label>
+        <p class="step-label" data-i18n="topic">Topic</p>
         <div id="scenarios" class="scenario-grid">
           <button class="scenario selected" data-scenario="free conversation">
-            <strong>Free conversation</strong><span>Chat about anything</span></button>
+            <strong data-i18n="sc_free">Free conversation</strong><span data-i18n="sc_free_sub">Chat about anything</span></button>
           <button class="scenario" data-scenario="ordering at a restaurant">
-            <strong>At a restaurant</strong><span>Menu, allergies, the bill</span></button>
+            <strong data-i18n="sc_rest">At a restaurant</strong><span data-i18n="sc_rest_sub">Menu, allergies, the bill</span></button>
           <button class="scenario" data-scenario="renting a flat">
-            <strong>Renting a flat</strong><span>Rooms, rent, landlords</span></button>
+            <strong data-i18n="sc_flat">Renting a flat</strong><span data-i18n="sc_flat_sub">Rooms, rent, landlords</span></button>
           <button class="scenario" data-scenario="telling a friend about your weekend">
-            <strong>Your weekend</strong><span>Tell a friend what you did</span></button>
+            <strong data-i18n="sc_weekend">Your weekend</strong><span data-i18n="sc_weekend_sub">Tell a friend what you did</span></button>
           <button class="scenario" data-scenario="asking for directions">
-            <strong>Directions</strong><span>Streets, stations, maps</span></button>
+            <strong data-i18n="sc_dir">Directions</strong><span data-i18n="sc_dir_sub">Streets, stations, maps</span></button>
         </div>
-        <button id="start-session" class="btn primary big">Start session</button>
+        <button id="start-session" class="btn primary big" data-i18n="start_session">Start session</button>
         <p id="setup-status" class="status"></p>
       </div>
 
@@ -79,7 +76,7 @@
         <p id="live-language" class="live-language"></p>
         <div class="stage">
           <canvas id="orb" class="orb" aria-hidden="true"></canvas>
-          <p id="orb-state" class="orb-state">Ready</p>
+          <p id="orb-state" class="orb-state"></p>
         </div>
 
         <div class="captions" aria-live="polite">
@@ -88,28 +85,28 @@
         </div>
 
         <div class="dock">
-          <button id="toggle-transcript" class="btn ghost round" title="Transcript" aria-label="Show transcript">
+          <button id="toggle-transcript" class="btn ghost round" data-i18n-title="transcript">
             <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
           </button>
-          <button id="record" class="mic" title="Hold to talk" aria-label="Hold to talk">
+          <button id="record" class="mic" data-i18n-title="hold_to_talk">
             <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
           </button>
-          <button id="end-session" class="btn ghost round" title="End session" aria-label="End session">
+          <button id="end-session" class="btn ghost round" data-i18n-title="end_session">
             <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
           </button>
         </div>
-        <p class="hint">Hold the button or the <kbd>space</kbd> bar to talk</p>
+        <p class="hint" data-i18n-html="talk_hint">Hold the button or the <kbd>space</kbd> bar to talk</p>
 
         <form id="text-form" class="text-form">
-          <input id="text-input" placeholder="...or type here" autocomplete="off">
-          <button type="submit" class="btn ghost">Send</button>
+          <input id="text-input" data-i18n-ph="type_here" autocomplete="off">
+          <button type="submit" class="btn ghost" data-i18n="send">Send</button>
         </form>
         <p id="talk-status" class="status"></p>
 
         <aside id="transcript" class="transcript glass" aria-hidden="true">
           <div class="transcript-head">
-            <span>Transcript</span>
-            <button id="close-transcript" class="btn ghost round small" aria-label="Close transcript">
+            <span data-i18n="transcript">Transcript</span>
+            <button id="close-transcript" class="btn ghost round small" data-i18n-title="close">
               <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
           </div>
@@ -119,20 +116,20 @@
 
       <div id="talk-summary" class="summary hidden">
         <div class="glass panel">
-          <p class="eyebrow">Session complete</p>
-          <h1 class="title small">How it went</h1>
+          <p class="eyebrow" data-i18n="session_complete">Session complete</p>
+          <h1 class="title small" data-i18n="how_it_went">How it went</h1>
           <p id="summary-text" class="summary-text"></p>
         </div>
         <div class="glass panel">
-          <h2>Your mistakes</h2>
+          <h2 data-i18n="your_mistakes">Your mistakes</h2>
           <ul id="summary-errors" class="list errors"></ul>
         </div>
         <div class="glass panel">
-          <h2>New cards</h2>
-          <p class="hint left">Remove any card you don't want. The rest are in your Review tab.</p>
+          <h2 data-i18n="new_cards">New cards</h2>
+          <p class="hint left" data-i18n="remove_hint">Remove any card you don't want. The rest are in your Review tab.</p>
           <ul id="summary-cards" class="list cards"></ul>
         </div>
-        <button id="new-session" class="btn primary big">New session</button>
+        <button id="new-session" class="btn primary big" data-i18n="new_session_btn">New session</button>
       </div>
     </section>
 
@@ -140,17 +137,18 @@
     <section id="tab-review" class="view hidden">
       <div id="review-languages" class="chips center"></div>
       <div id="review-empty" class="glass panel empty hidden">
-        <h2>All caught up</h2>
-        <p class="muted">Nothing to review right now. Come back later!</p>
+        <h2 data-i18n="all_caught_up">All caught up</h2>
+        <p class="muted" data-i18n="nothing_due">Nothing to review right now. Come back later!</p>
       </div>
       <div id="review-card" class="review hidden">
         <div id="flashcard" class="flashcard">
           <div class="face front glass">
             <p class="kind" id="card-kind"></p>
             <p class="front-text" id="card-front"></p>
+            <p id="card-context" class="context"></p>
             <form id="answer-form" class="answer-form">
               <input id="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false">
-              <button type="submit" class="btn primary">Check</button>
+              <button type="submit" class="btn primary" data-i18n="check">Check</button>
             </form>
           </div>
           <div id="card-back-wrap" class="face back glass">
@@ -161,15 +159,15 @@
           </div>
         </div>
         <div class="card-actions">
-          <button id="play-audio" class="btn ghost">Play audio</button>
-          <button id="show-answer" class="btn ghost">I don't know: show answer</button>
+          <button id="play-audio" class="btn ghost" data-i18n="play_audio">Play audio</button>
+          <button id="show-answer" class="btn ghost" data-i18n="dont_know">I don't know: show answer</button>
         </div>
-        <p id="rating-help" class="hint hidden">How well did you know it? This decides when the card comes back.</p>
+        <p id="rating-help" class="hint hidden" data-i18n="rating_help">How well did you know it? This decides when the card comes back.</p>
         <div id="ratings" class="ratings hidden">
-          <button data-rating="1" class="again" title="Didn't know it: see it again in a few minutes">Again <small>1</small></button>
-          <button data-rating="2" class="hard" title="Got it with difficulty">Hard <small>2</small></button>
-          <button data-rating="3" class="good" title="Got it">Good <small>3</small></button>
-          <button data-rating="4" class="easy" title="Too easy: wait longer">Easy <small>4</small></button>
+          <button data-rating="1" class="again" data-i18n-title="again_t"><span data-i18n="again">Again</span> <small>1</small></button>
+          <button data-rating="2" class="hard" data-i18n-title="hard_t"><span data-i18n="hard">Hard</span> <small>2</small></button>
+          <button data-rating="3" class="good" data-i18n-title="good_t"><span data-i18n="good">Good</span> <small>3</small></button>
+          <button data-rating="4" class="easy" data-i18n-title="easy_t"><span data-i18n="easy">Easy</span> <small>4</small></button>
         </div>
       </div>
     </section>
@@ -181,21 +179,25 @@
       <div class="stats" id="stats"></div>
 
       <div class="glass panel">
-        <h2>Most frequent mistakes</h2>
-        <p class="hint left">Similar mistakes are grouped together, even when they were explained with different words.</p>
+        <h2 data-i18n="most_frequent">Most frequent mistakes</h2>
+        <p class="hint left" data-i18n="grouped_hint">Similar mistakes are grouped together, even when they were explained with different words.</p>
         <ul id="top-errors" class="list errors"></ul>
       </div>
 
-      <div class="glass panel">
-        <h2>Search what you said</h2>
-        <form id="memory-form" class="text-form">
-          <input id="memory-input" placeholder="e.g. prenotare, mia amica, il mio cane...">
-          <button type="submit" class="btn primary">Search</button>
-        </form>
-        <div id="memory-results" class="memory-results"></div>
-      </div>
     </section>
   </main>
+
+  <!-- In-app confirmation dialog (see ui.js confirmDialog) -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box glass">
+      <h2 id="modal-title"></h2>
+      <p id="modal-body" class="muted"></p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn ghost"></button>
+        <button id="modal-ok" class="btn primary"></button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Opened by double-clicking index.html: browsers block the app's scripts on file:// pages.

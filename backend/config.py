@@ -42,9 +42,12 @@ MAX_PLANNER_TARGETS = 6
 #           weak points grouped by the exact rule text
 # "none":   no targets and no memory at all (lower baseline)
 MEMORY_MODE = os.getenv("MEMORY_MODE", "vector")
-# Two errors belong to the same "concept" (same recurring mistake) when the cosine similarity
-# of their embeddings is at least this. Tuned with eval/eval_concepts.py (best F1 = 0.83 at 0.50).
-CONCEPT_SIMILARITY = float(os.getenv("CONCEPT_SIMILARITY", "0.50"))
+# Two errors belong to the same "concept" (same recurring mistake), decided on the cosine similarity
+# of their embeddings:  below LOW -> different;  LOW..HIGH -> doubtful, an LLM decides;  HIGH or more -> same.
+# Similarity alone (one threshold, best F1 = 0.83 at 0.50) merged unrelated mistakes that share words
+# ("sport games -> sports games" with "capitalize the names of games", 0.53). See eval/eval_concepts.py.
+CONCEPT_SIMILARITY_LOW = float(os.getenv("CONCEPT_SIMILARITY_LOW", "0.45"))
+CONCEPT_SIMILARITY_HIGH = float(os.getenv("CONCEPT_SIMILARITY_HIGH", "0.65"))
 MEMORY_TOP_K = 3                 # past memories added to the tutor prompt
 MEMORY_MIN_SIMILARITY = 0.50     # below this a memory is not related enough to show the tutor (tuned with eval_retrieval.py: 0 false memories)
 MIN_TURNS_FOR_FIXED = 4          # a session needs this many learner turns before it can mark a mistake as fixed

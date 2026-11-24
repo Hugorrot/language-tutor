@@ -10,14 +10,14 @@ Each part of the system answers one question, with a metric, a dataset and a **b
 | # | Question | Metric | Data | Baseline | Script |
 |---|---|---|---|---|---|
 | 1 | Does it find the learner's mistakes? | Precision / recall / F1 (span overlap) | `datasets/errors_it.jsonl` | Larger model (`gpt-6-sol`) | `eval_errors.py` |
-| 2 | Does the vector DB recognise the same mistake when it is reworded? | Pair precision / recall / F1, best threshold | `datasets/error_pairs_it.jsonl` | Identical rule text (old `GROUP BY rule`) | `eval_concepts.py` |
+| 2 | Does the vector DB recognise the same mistake when it is reworded? | Pair precision / recall / F1, best threshold | `datasets/error_pairs_it.jsonl`, `error_pairs_en.jsonl` | Identical rule text (old `GROUP BY rule`) | `eval_concepts.py` |
 | 3 | Does it bring back the right memory? | Recall@3, MRR, false-memory rate | `datasets/retrieval_it.json` | Recency (last 3 things said) | `eval_retrieval.py` |
 | 4 | Does memory make the tutor better? (ablation) | Target elicitation, correct vs invented memory references, fragmentation | Simulated learners `datasets/sim_learners.json` | `MEMORY_MODE=none` and `sql` | `simulate.py` |
 | 5 | Are the cards good? | Human rubric 1–3, human–judge agreement (Cohen's kappa) | ~50 generated cards | Agreement between humans | `eval_cards.py` |
 | 6 | Is it fast enough to talk? | Mean and p90 ms per turn, split asr / memory / llm / tts | Stored timings | Before/after memory | `eval_latency.py` |
 
 Experiments 2 and 3 also **tune** the two thresholds in `backend/config.py`
-(`CONCEPT_SIMILARITY`, `MEMORY_MIN_SIMILARITY`). Tune them first, then run experiment 4.
+(`CONCEPT_SIMILARITY_LOW`/`_HIGH`, `MEMORY_MIN_SIMILARITY`). Tune them first, then run experiment 4.
 
 ## Commands
 
@@ -70,6 +70,8 @@ ground truth for fragmentation.
 - **Error detection:** a predicted error matches a gold error if their `original` spans overlap.
 - **Concept grouping:** a pair counts as "same" if the cosine similarity of the two embedded errors is at
   least the threshold. Compared across three ways of writing an error as text (`rule`, `pair`, `full`).
+  Then the app's system: below `CONCEPT_SIMILARITY_LOW` different, from `_HIGH` same, in between an LLM
+  decides (`prompts/same_mistake.md`); several bands are compared, with the number of LLM calls.
 - **Retrieval:** Recall@k = relevant memories in the top k / min(k, number of relevant memories).
 - **Target elicitation:** of the targets the planner chose, the share the learner actually had to use
   (LLM judge reads the transcript). Only sessions 2+ count, since session 1 has nothing to remember.

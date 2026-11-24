@@ -18,7 +18,9 @@ async function request(method, path, body, isForm = false) {
     const text = await res.text();
     let detail = text;
     try { detail = JSON.parse(text).detail ?? text; } catch { /* not JSON */ }
-    throw new Error(res.status === 422 ? detail : `${method} ${path} failed (${res.status}): ${detail}`);
+    const err = new Error(res.status === 422 ? detail : `${method} ${path} failed (${res.status}): ${detail}`);
+    err.status = res.status;
+    throw err;
   }
   return res.json();
 }
@@ -26,6 +28,7 @@ async function request(method, path, body, isForm = false) {
 export const api = {
   createLearner: (data) => request("POST", "/learner", data),
   getLearner: (id) => request("GET", `/learner/${id}`),
+  updateLearner: (id, changes) => request("PATCH", `/learner/${id}`, changes),
 
   startSession: (learnerId, scenario, targetLanguage) =>
     request("POST", "/session/start", { learner_id: learnerId, scenario, target_language: targetLanguage }),
@@ -49,6 +52,7 @@ export const api = {
 
   progress: (learnerId, language) =>
     request("GET", `/progress?learner_id=${learnerId}${language ? `&language=${encodeURIComponent(language)}` : ""}`),
+  mistakeOccurrences: (learnerId, conceptId) => request("GET", `/mistakes/${conceptId}?learner_id=${learnerId}`),
   searchMemory: (learnerId, q, language) =>
     request("GET", `/memory/search?learner_id=${learnerId}&q=${encodeURIComponent(q)}` +
                    (language ? `&language=${encodeURIComponent(language)}` : "")),
@@ -58,9 +62,12 @@ export const api = {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function mock(method, path) {
+async function mock(method, path, body) {
   await sleep(400);
   if (path === "/learner") return { learner_id: 1 };
+  if (method === "PATCH" && path.startsWith("/learner/"))
+    return { learner_id: 1, name: "Test", target_language: "Italian", explanation_language: body?.explanation_language || "English",
+             goal: "", level: "A2", languages: ["Italian"], supported_languages: ["Italian", "Spanish", "French", "English", "German", "Portuguese"] };
   if (path.startsWith("/learner/"))
     return { learner_id: 1, name: "Test", target_language: "Italian", explanation_language: "English", goal: "", level: "A2",
              languages: ["Italian"], supported_languages: ["Italian", "Spanish", "French", "English", "German", "Portuguese"] };
@@ -87,7 +94,13 @@ async function mock(method, path) {
   if (path === "/review/answer") return { next_due: new Date(Date.now() + 864e5).toISOString() };
   if (path.startsWith("/progress"))
     return { language: "Italian", languages: ["Italian"], sessions: 3, minutes_spoken: 24, level: "A2", cards_total: 18, cards_due: 4, review_accuracy: 0.75,
-             top_errors: [{ rule: "Possessives take an article in Italian", count: 4, sessions: 3, fixed: false }] };
+             top_errors: [{ rule: "Possessives take an article in Italian", count: 4, sessions: 3, fixed: false, concept_id: 1 }] };
+  if (path.startsWith("/mistakes/"))
+    return { concept_id: 1, count: 2, occurrences: [
+      { original: "con mia amica", correction: "con la mia amica", rule: "Possessives take an article",
+        you_said: "Sabato sono andato al cinema con mia amica", date: "2026-11-23 14:15:25" },
+      { original: "mio libro", correction: "il mio libro", rule: "Use the article before possessives",
+        you_said: "Mio libro è sul tavolo", date: "2026-11-20 10:02:11" }] };
   if (path.startsWith("/memory/search"))
     return { query: "amica", exact_count: 3,
              similar: [{ text: "Sono andato al cinema con mia amica Giulia", similarity: 0.71, session_id: 1 },

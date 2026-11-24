@@ -1,8 +1,9 @@
 // Entry point: onboarding + tab switching. Each tab lives in its own file.
 import { api } from "./api.js";
-import { initTalk, renderLanguagePicker } from "./talk.js";
+import { goHome, initTalk, renderLanguagePicker } from "./talk.js";
 import { initReview, loadReview } from "./review.js";
 import { loadProgress } from "./progress.js";
+import { applyStatic, browserLanguage, getUiLanguage, setUiLanguage } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -16,6 +17,13 @@ let learner = null;
 export const getLearner = () => learner;
 export const getLanguage = () => learner?.target_language || "Italian";
 export function setLanguage(language) { if (learner) learner.target_language = language; }
+export const getExplanationLanguage = () => learner?.explanation_language || "English";
+
+// The whole interface follows the explanation language.
+export async function setExplanationLanguage(language) {
+  learner = { ...learner, ...(await api.updateLearner(getLearnerId(), { explanation_language: language })) };
+  setUiLanguage(language);
+}
 
 export async function loadLearner() {
   const id = getLearnerId();
@@ -24,7 +32,7 @@ export async function loadLearner() {
     learner = await api.getLearner(id);
   } catch (e) {
     // The database was reset: start again with onboarding.
-    if (String(e.message).includes("(404)")) localStorage.removeItem("learner_id");
+    if (e.status === 404) localStorage.removeItem("learner_id");
     learner = null;
   }
   return learner;
@@ -67,6 +75,12 @@ function initOnboarding() {
   document.querySelector("main").classList.toggle("hidden", needsOnboarding);
   document.body.classList.toggle("onboarding-mode", needsOnboarding);
 
+  // Before a profile exists the interface uses the browser's language, and follows the
+  // "Explanations in" choice as soon as it changes.
+  const expl = $("onboarding-explanation");
+  expl.value = getUiLanguage();
+  expl.addEventListener("change", () => setUiLanguage(expl.value));
+
   $("onboarding-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
@@ -82,11 +96,18 @@ function initOnboarding() {
 }
 
 async function boot() {
+  applyStatic();
   await loadLearner();
+  setUiLanguage(learner?.explanation_language || browserLanguage());
   initOnboarding();
   initTalk();
   initReview();
   window.addEventListener("hashchange", route);
+  // "Voice Tutor" (top left) always goes back to the start screen, from any tab or view
+  document.querySelector(".brand").addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (getLearnerId() && (await goHome()) && location.hash !== "#talk") location.hash = "#talk";
+  });
   route();
   refreshDueBadge();
 }

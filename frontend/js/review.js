@@ -6,18 +6,13 @@ import { api } from "./api.js";
 import { playBase64 } from "./audio.js";
 import { getLanguage, getLearnerId, refreshDueBadge } from "./app.js";
 import { renderChips } from "./ui.js";
+import { langName, onUiLanguageChange, t } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 let queue = [];
 let current = null;
 let language = null;
 
-const KIND_LABEL = { cloze: "Fill the gap", vocab: "Vocabulary", reverse: "Translate" };
-const PLACEHOLDER = {
-  cloze: "Type the missing word(s)…",
-  vocab: "What does it mean?",
-  reverse: (lang) => `Write it in ${lang}…`,
-};
 
 // ---- answer checking ----
 const clean = (s) => (s || "").toLowerCase().replace(/[’`´]/g, "'")
@@ -32,12 +27,13 @@ function check(answer, expected) {
   return "wrong";
 }
 
+// result -> [text key, colour class, suggested rating]
 const FEEDBACK = {
-  correct: ["Correct!", "good", 3],
-  accent: ["Almost: check the accents.", "hard", 2],
-  wrong: ["Not quite. The answer is:", "again", 1],
-  skipped: ["The answer is:", "", 0],
-  selfcheck: ["Compare with the answer:", "", 0],
+  correct: ["fb_correct", "good", 3],
+  accent: ["fb_accent", "hard", 2],
+  wrong: ["fb_wrong", "again", 1],
+  skipped: ["fb_skipped", "", 0],
+  selfcheck: ["fb_selfcheck", "", 0],
 };
 
 // Show the gap as a visible blank line inside the sentence.
@@ -55,19 +51,46 @@ function renderFront(text) {
   });
 }
 
+// "You said: …" under the question, with the wrong words highlighted.
+function renderContext(card) {
+  const el = $("card-context");
+  el.innerHTML = "";
+  if (!card.you_said) return;
+  const label = document.createElement("span");
+  label.className = "context-label";
+  label.textContent = t("you_said");
+  const quote = document.createElement("span");
+  quote.className = "context-quote";
+  const text = card.you_said;
+  const i = card.mistake ? text.toLowerCase().indexOf(card.mistake.toLowerCase()) : -1;
+  if (i >= 0) {
+    const mark = document.createElement("mark");
+    mark.textContent = text.slice(i, i + card.mistake.length);
+    quote.append(`“${text.slice(0, i)}`, mark, `${text.slice(i + card.mistake.length)}”`);
+  } else {
+    quote.textContent = `“${text}”`;
+  }
+  el.append(label, quote);
+}
+
+// Texts around the card that depend on the interface language
+function renderLabels(card) {
+  $("card-kind").textContent = `${langName(card.language)} · ${t(`kind_${card.kind}`)}`;
+  $("answer-input").placeholder = t(`ph_${card.kind}`, { lang: langName(card.language, { inSentence: true }) });
+  renderContext(card);
+}
+
 function showCard() {
   current = queue.shift() || null;
   $("review-empty").classList.toggle("hidden", !!current);
   $("review-card").classList.toggle("hidden", !current);
   if (!current) return;
 
-  $("card-kind").textContent = `${current.language || ""} · ${KIND_LABEL[current.kind] || current.kind}`;
   renderFront(current.front);
+  renderLabels(current);
   $("card-back").textContent = current.back;
   $("card-explanation").textContent = current.explanation || "";
   $("card-sentence").textContent = current.kind === "cloze" ? current.front.replace("___", current.back) : "";
-  const ph = PLACEHOLDER[current.kind];
-  $("answer-input").placeholder = typeof ph === "function" ? ph(current.language || "the target language") : ph || "";
   $("answer-input").value = "";
   $("flashcard").classList.remove("flipped");
   $("ratings").classList.add("hidden");
@@ -81,9 +104,10 @@ function reveal(answer) {
   // Vocabulary answers are meanings in the learner's language: many are right, so the learner judges.
   let result = check(answer, current.back);
   if (current.kind === "vocab" && result === "wrong") result = "selfcheck";
-  const [text, cls, rating] = FEEDBACK[result];
+  const [key, cls, rating] = FEEDBACK[result];
+  const text = t(key);
   const fb = $("answer-feedback");
-  fb.textContent = answer && result !== "correct" ? `You wrote “${answer}”. ${text}` : text;
+  fb.textContent = answer && result !== "correct" ? `${t("you_wrote", { answer })} ${text}` : text;
   fb.className = "feedback " + cls;
   document.querySelectorAll("#ratings button").forEach((b) =>
     b.classList.toggle("suggested", Number(b.dataset.rating) === rating));
@@ -111,7 +135,7 @@ export async function loadReview(choice = null) {
     const langs = Object.keys(all.due_by_language || {});
     language = choice || (langs.includes(getLanguage()) || !langs.length ? getLanguage() : langs[0]);
     // One chip per language that has cards due, with how many.
-    const items = langs.map((l) => ({ value: l, label: l, badge: all.due_by_language[l] }));
+    const items = langs.map((l) => ({ value: l, label: langName(l), badge: all.due_by_language[l] }));
     renderChips($("review-languages"), langs.length > 1 ? items : [], language, (v) => loadReview(v));
     queue = langs.length > 1 ? (await api.dueCards(getLearnerId(), language)).cards : all.cards;
   } catch (e) {
@@ -138,6 +162,11 @@ export function initReview() {
   $("show-answer").onclick = () => reveal("");
   $("play-audio").onclick = playCurrent;
   document.querySelectorAll("#ratings button").forEach((b) => { b.onclick = () => rate(Number(b.dataset.rating)); });
+
+  onUiLanguageChange(() => {
+    if (current) renderLabels(current);
+    if (!$("tab-review").classList.contains("hidden")) loadReview(language);
+  });
 
   // Keys 1-4 rate the card once the answer is shown
   window.addEventListener("keydown", (e) => {
