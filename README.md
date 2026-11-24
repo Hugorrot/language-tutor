@@ -109,6 +109,22 @@ for the microphone resource-cleanup and playback-rate tests.
 `MEMORY_MODE` (`vector`, `sql` or `none`) switches memory off for the evaluation baselines. If you delete
 `backend/data/tutor.db`, also delete `backend/data/chroma/` so the two stay in sync.
 
+## Offline mode (no API key, no cost)
+
+Set `FAKE_LLM=1` in `backend/.env` (or in the shell) and start the backend as usual. Every call in
+`backend/tutor/llm.py` then goes to `backend/tutor/fake_llm.py` instead of OpenAI:
+
+- **Tutor and summary:** canned Italian replies marked `[offline]`; the tutor recasts the learner's mistakes.
+- **Errors and cards:** a few common Italian mistakes (missing article with possessives, *avere* instead of
+  *essere*, *sono 22 anni*, *mi piace* + plural, *la problema*, missing accents) are found with regular
+  expressions, and cloze/reverse cards are built from them.
+- **Speech to text:** returns sample learner sentences with mistakes, one per turn. **Text to speech:** no audio.
+- **Embeddings:** deterministic bag of words, so concept grouping and memory search still work.
+
+It tests the plumbing (endpoints, database, vector DB, FSRS, frontend), not the quality of the tutor.
+Offline data goes to `backend/data/fake/`, separate from the real `tutor.db` and `chroma/`; delete that
+folder to start over. Other target languages work, but no mistakes are found in them.
+
 ## Team rules
 
 1. The contracts are `API.md` (endpoints) and `backend/schemas.py` (error and card format).

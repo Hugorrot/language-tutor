@@ -9,7 +9,7 @@ import hashlib
 import config
 from tutor import llm
 
-CACHE_DIR = config.BASE_DIR / "data" / "audio_cache"
+CACHE_DIR = config.AUDIO_CACHE_DIR
 
 
 def text_to_speech(text: str, language: str) -> bytes:
