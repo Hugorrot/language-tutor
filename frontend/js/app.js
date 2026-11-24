@@ -1,13 +1,16 @@
 // Entry point: onboarding + tab switching. Each tab lives in its own file.
-import { api } from "./api.js";
+import { api, USE_MOCK } from "./api.js";
 import { initTalk, renderLanguagePicker } from "./talk.js";
 import { initReview, loadReview } from "./review.js";
 import { loadProgress } from "./progress.js";
 
+const storage = USE_MOCK ? sessionStorage : localStorage;
+const learnerKey = USE_MOCK ? "preview_learner_id" : "learner_id";
+if (USE_MOCK) document.getElementById("preview-notice").classList.remove("hidden");
 const $ = (id) => document.getElementById(id);
 
 export function getLearnerId() {
-  return Number(localStorage.getItem("learner_id")) || null;
+  return Number(storage.getItem(learnerKey)) || null;
 }
 
 // The learner's profile, loaded once. target_language = the language they practise right now
@@ -24,7 +27,7 @@ export async function loadLearner() {
     learner = await api.getLearner(id);
   } catch (e) {
     // The database was reset: start again with onboarding.
-    if (String(e.message).includes("(404)")) localStorage.removeItem("learner_id");
+    if (String(e.message).includes("(404)")) storage.removeItem(learnerKey);
     learner = null;
   }
   return learner;
@@ -37,6 +40,7 @@ export async function refreshDueBadge() {
     const { due_count } = await api.dueCards(id);
     const badge = $("due-badge");
     badge.textContent = due_count;
+    window.dispatchEvent(new CustomEvent("tutor:due", { detail: due_count }));
     badge.classList.toggle("hidden", due_count === 0);
   } catch (e) { console.warn(e); }
 }
@@ -44,8 +48,11 @@ export async function refreshDueBadge() {
 const TABS = ["talk", "review", "progress"];
 
 function showTab(name) {
+  window.scrollTo({ top: 0, behavior: "instant" });
   document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
   TABS.forEach((t) => $(`tab-${t}`).classList.toggle("hidden", t !== name));
+  window.dispatchEvent(new CustomEvent("tutor:view", { detail: name }));
+  if (!getLearnerId()) return;
   if (name === "review") loadReview();
   if (name === "progress") loadProgress();
 }
@@ -71,13 +78,15 @@ function initOnboarding() {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
     const { learner_id } = await api.createLearner(data);
-    localStorage.setItem("learner_id", learner_id);
+    storage.setItem(learnerKey, learner_id);
     await loadLearner();
     renderLanguagePicker();
     $("onboarding").classList.add("hidden");
     document.querySelector("main").classList.remove("hidden");
     document.body.classList.remove("onboarding-mode");
     location.hash = "#talk";
+    route();
+    refreshDueBadge();
   });
 }
 

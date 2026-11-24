@@ -17,3 +17,11 @@ backend/data/chroma/
 .DS_Store
 .vscode/
 .idea/
+
+# Private project documents
+/doc/
+
+# Frontend tooling
+node_modules/
+frontend/dist/
+frontend/generated/

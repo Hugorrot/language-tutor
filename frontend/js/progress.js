@@ -6,10 +6,6 @@ import { renderChips } from "./ui.js";
 const $ = (id) => document.getElementById(id);
 let language = null;      // the language shown; starts on the one being practised
 
-function stat(label, value) {
-  return `<div class="stat"><div class="value">${value}</div><div class="label">${label}</div></div>`;
-}
-
 // Opening the tab shows the language being practised; the chips switch to another one.
 export async function loadProgress(choice = null) {
   language = choice || getLanguage();
@@ -21,14 +17,7 @@ export async function loadProgress(choice = null) {
     language, (v) => { $("memory-results").innerHTML = ""; loadProgress(v); });
   $("progress-title").textContent = `${p.language} · Level ${p.level}`;
 
-  const acc = p.review_accuracy === null ? "–" : Math.round(p.review_accuracy * 100) + "%";
-  $("stats").innerHTML =
-    stat("Sessions", p.sessions) +
-    stat("Minutes spoken (est.)", p.minutes_spoken) +
-    stat("Review accuracy", acc) +
-    stat("Cards", p.cards_total) +
-    stat("Due now", p.cards_due) +
-    stat("Level", p.level);
+  window.dispatchEvent(new CustomEvent("tutor:progress", { detail: p }));
 
   $("top-errors").innerHTML = p.top_errors.length ? "" :
     `<li class="muted">No ${p.language} mistakes yet. Have a conversation first.</li>`;
@@ -37,11 +26,7 @@ export async function loadProgress(choice = null) {
     li.className = "mistake";
     const rule = document.createElement("span");
     rule.textContent = e.rule;
-    const meta = document.createElement("span");
-    meta.className = "chip" + (e.fixed ? " fixed" : "");
-    const where = e.sessions > 1 ? ` · ${e.sessions} sessions` : "";
-    meta.textContent = e.fixed ? "fixed" : `${e.count}×${where}`;
-    li.append(rule, meta);
+    li.appendChild(rule);
     $("top-errors").appendChild(li);
   }
 }

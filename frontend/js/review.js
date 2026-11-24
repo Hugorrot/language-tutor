@@ -2,6 +2,7 @@
 // The learner types the answer (or skips), sees the solution, then rates how well they knew it:
 // Again / Hard / Good / Easy. The rating goes to py-fsrs in the backend, which decides when the
 // card comes back (Again = in a few minutes, Easy = in days).
+import { notify } from "./preferences.js";
 import { api } from "./api.js";
 import { playBase64 } from "./audio.js";
 import { getLanguage, getLearnerId, refreshDueBadge } from "./app.js";
@@ -70,6 +71,8 @@ function showCard() {
   $("answer-input").placeholder = typeof ph === "function" ? ph(current.language || "the target language") : ph || "";
   $("answer-input").value = "";
   $("flashcard").classList.remove("flipped");
+  document.querySelector("#flashcard .front").inert = false;
+  document.querySelector("#flashcard .back").inert = true;
   $("ratings").classList.add("hidden");
   $("rating-help").classList.add("hidden");
   $("show-answer").classList.remove("hidden");
@@ -89,19 +92,29 @@ function reveal(answer) {
     b.classList.toggle("suggested", Number(b.dataset.rating) === rating));
 
   $("flashcard").classList.add("flipped");
+  document.querySelector("#flashcard .front").inert = true;
+  document.querySelector("#flashcard .back").inert = false;
   $("ratings").classList.remove("hidden");
   $("rating-help").classList.remove("hidden");
   $("show-answer").classList.add("hidden");
   $("answer-input").blur();
+  (document.querySelector("#ratings button.suggested") || document.querySelector("#ratings button")).focus({ preventScroll: true });
+  $("ratings").scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
 }
 
 async function rate(rating) {
   if (!current || !$("flashcard").classList.contains("flipped")) return;
   const card = current;
   current = null;
-  await api.answerCard(card.card_id, rating);
-  refreshDueBadge();
-  showCard();
+  try {
+    const result = await api.answerCard(card.card_id, rating);
+    notify("Review saved", "Your next review has been scheduled.");
+    refreshDueBadge();
+    showCard();
+  } catch (err) {
+    current = card;
+    notify("Could not save your review", "Your card is still here. " + err.message, "failed");
+  }
 }
 
 // Opening the tab starts on the language being practised (if it has cards due); chips switch.

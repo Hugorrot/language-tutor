@@ -2,13 +2,16 @@
 import { api } from "./api.js";
 import { playBase64, readLevels, startRecording, stopPlayback, stopRecording, unlockAudio } from "./audio.js";
 import { getLanguage, getLearner, getLearnerId, refreshDueBadge, setLanguage } from "./app.js";
-import { createOrb } from "./orb.js";
+import { createOrb } from "../src/orbBridge.jsx";
+import { mountSessionWidgets, renderSummaryCards } from "../src/widgets.jsx";
+import { getAudioPreferences, notify } from "./preferences.js";
 import { renderChips } from "./ui.js";
 
 const $ = (id) => document.getElementById(id);
 let sessionId = null;
 let busy = false;
 let recording = false;
+let recordingTask = null;
 let scenario = "free conversation";
 let language = null;          // chosen in the setup screen
 
@@ -19,6 +22,7 @@ export function renderLanguagePicker() {
   language = getLanguage();
   const langs = learner?.supported_languages || ALL_LANGUAGES;
   renderChips($("language-picker"), langs.map((l) => ({ value: l, label: l })), language, (v) => { language = v; });
+
 }
 let orb = null;
 
@@ -33,8 +37,9 @@ function setOrb(state) {
   orb?.setState(state);
   $("orb-state").textContent = STATE_LABEL[state];
   $("orb-state").dataset.state = state;
-  $("record").classList.toggle("recording", state === "listening");
-  $("record").disabled = state === "thinking";
+  window.dispatchEvent(new CustomEvent("tutor:voice-state", { detail: state }));
+  $("text-input").disabled = state === "thinking" || state === "listening";
+  document.querySelector("#text-form button").disabled = state === "thinking" || state === "listening";
 }
 
 function addMessage(role, text) {
@@ -54,13 +59,20 @@ function caption(id, text) {
   if (text) el.classList.add("show");
 }
 
-function setStatus(text) { $("talk-status").textContent = text; }
+function setStatus(text, status) {
+  $("talk-status").textContent = text;
+  if (status) window.dispatchEvent(new CustomEvent("tutor:session-status", { detail: {status, label:text} }));
+}
 
 function showView(view) {
+  window.scrollTo({ top: 0, behavior: "instant" });
+  window.dispatchEvent(new CustomEvent("tutor:conversation", { detail: view }));
   ["talk-setup", "talk-live", "talk-summary"].forEach((v) => $(v).classList.toggle("hidden", v !== view));
+  window.dispatchEvent(new CustomEvent("tutor:view"));
 }
 
 async function speak(b64) {
+  if (!b64 || !getAudioPreferences().autoPlay) { setOrb("idle"); return; }
   setOrb("speaking");
   await playBase64(b64);
   if (orb?.state === "speaking") setOrb("idle");
@@ -75,7 +87,7 @@ async function startSession() {
     const res = await api.startSession(getLearnerId(), scenario, language);
     sessionId = res.session_id;
     setLanguage(res.target_language);
-    $("live-language").textContent = `${res.target_language} · ${res.level}`;
+    $("live-language").textContent = `Speak ${res.target_language}`;
     $("chat").innerHTML = "";
     caption("caption-user", "");
     caption("caption-tutor", res.tutor_text);
@@ -85,6 +97,7 @@ async function startSession() {
     await speak(res.audio_b64);
   } catch (e) {
     $("setup-status").textContent = "Error: " + e.message;
+    notify("Could not start the session", e.message, "failed");
   } finally {
     $("start-session").disabled = false;
     $("start-session").textContent = "Start session";
@@ -92,7 +105,7 @@ async function startSession() {
 }
 
 async function sendTurn(payload) {
-  if (busy || !sessionId) return;
+  if (busy || recording || !sessionId) return;
   busy = true;
   setOrb("thinking");
   setStatus("");
@@ -107,50 +120,67 @@ async function sendTurn(payload) {
     busy = false;
     await speak(res.audio_b64);
   } catch (e) {
-    setStatus(e.message);
     setOrb("idle");
+    setStatus(e.message, "failed");
+    notify("Message was not sent", e.message, "failed");
   } finally {
     busy = false;
   }
 }
 
 async function beginTalking() {
-  if (busy || recording || !sessionId) return;
-  stopPlayback();                     // talking over the tutor interrupts it
+  if (busy || recording || !sessionId) return false;
+  stopPlayback();
+  recording = true;
+  setStatus("");
+  setOrb("listening");
+  recordingTask = startRecording();
   try {
-    recording = true;
-    setOrb("listening");
-    await startRecording();
+    await recordingTask;
+    return recording;
   } catch (err) {
     recording = false;
     setOrb("idle");
-    setStatus("Microphone not available: " + err.message);
+    setStatus("Microphone not available: " + err.message, "failed");
+    notify("Microphone unavailable", "Check your browser microphone permission, or type your message.", "failed");
+    return false;
   }
 }
-
-async function endTalking() {
+async function endTalking({ reason = 'release' } = {}) {
   if (!recording) return;
   recording = false;
-  const blob = await stopRecording();
-  if (blob && blob.size > 1000) sendTurn({ audioBlob: blob });
-  else { setOrb("idle"); setStatus("Too short: hold while you speak."); }
+  const shouldSend = ['release', 'tap', 'key'].includes(reason);
+  setOrb("thinking");
+  try {
+    await recordingTask;
+    const blob = await stopRecording();
+    if (shouldSend && blob && blob.size > 1000) await sendTurn({ audioBlob: blob });
+    else {
+      setOrb("idle");
+      if (shouldSend) setStatus("Too short: hold while you speak.", "pending");
+      else if (reason !== 'mic-denied') setStatus("Recording cancelled.", "cancelled");
+    }
+  } catch { /* beginTalking reports microphone failures. */ }
 }
 
 async function endSession() {
   if (busy) return;
+  await endTalking({ reason: "cancel" });
   stopPlayback();
   busy = true;
   setOrb("thinking");
-  setStatus("Analysing your session…");
+  setStatus("Analysing your session…", "running");
   try {
     const res = await api.endSession(sessionId);
     sessionId = null;
     renderSummary(res);
+    notify("Session complete", `${res.cards.length} new practice card${res.cards.length === 1 ? "" : "s"} ready to review.`);
     showView("talk-summary");
     toggleTranscript(false);
     refreshDueBadge();
   } catch (e) {
-    setStatus("Error: " + e.message);
+    setStatus("Error: " + e.message, "failed");
+    notify("Could not finish the session", e.message, "failed");
   } finally {
     busy = false;
     setOrb("idle");
@@ -170,19 +200,7 @@ function renderSummary({ summary, errors, cards }) {
     $("summary-errors").appendChild(li);
   }
 
-  $("summary-cards").innerHTML = cards.length ? "" :
-    '<li class="muted">No new cards: mistakes you already have cards for were moved back into review.</li>';
-  for (const c of cards) {
-    const li = document.createElement("li");
-    const text = document.createElement("span");
-    text.textContent = `${c.front}  →  ${c.back}`;
-    const del = document.createElement("button");
-    del.className = "btn ghost small";
-    del.textContent = "Remove";
-    del.onclick = async () => { await api.deleteCard(c.card_id); li.remove(); refreshDueBadge(); };
-    li.append(text, del);
-    $("summary-cards").appendChild(li);
-  }
+  renderSummaryCards(cards, refreshDueBadge);
 }
 
 function toggleTranscript(open) {
@@ -193,15 +211,17 @@ function toggleTranscript(open) {
 }
 
 export function initTalk() {
+  mountSessionWidgets(beginTalking, endTalking);
   orb = createOrb($("orb"), readLevels);
-  createOrb($("orb-hero"), () => null, { particles: 520, hud: false });
 
-  document.querySelectorAll(".scenario").forEach((b) => {
-    b.onclick = () => {
-      document.querySelectorAll(".scenario").forEach((x) => x.classList.toggle("selected", x === b));
-      scenario = b.dataset.scenario;
-    };
-  });
+
+  renderChips($("scenarios"), [
+    {value:"free conversation", label:"Free conversation"},
+    {value:"ordering at a restaurant", label:"At a restaurant"},
+    {value:"renting a flat", label:"Renting a flat"},
+    {value:"telling a friend about your weekend", label:"Your weekend"},
+    {value:"asking for directions", label:"Directions"},
+  ], scenario, value => { scenario = value; });
 
   $("start-session").onclick = startSession;
   $("end-session").onclick = endSession;
@@ -216,25 +236,6 @@ export function initTalk() {
     $("text-input").value = "";
     unlockAudio();
     sendTurn({ text });
-  });
-
-  // Hold to talk: mouse, touch, or the space bar.
-  const btn = $("record");
-  btn.addEventListener("pointerdown", (e) => { e.preventDefault(); btn.setPointerCapture?.(e.pointerId); beginTalking(); });
-  btn.addEventListener("pointerup", endTalking);
-  btn.addEventListener("pointercancel", endTalking);
-  btn.addEventListener("contextmenu", (e) => e.preventDefault());
-
-  const typing = (e) => ["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName);
-  const liveVisible = () => !$("talk-live").classList.contains("hidden") && !$("tab-talk").classList.contains("hidden");
-  window.addEventListener("keydown", (e) => {
-    if (e.code !== "Space" || e.repeat || typing(e) || !liveVisible()) return;
-    e.preventDefault();
-    beginTalking();
-  });
-  window.addEventListener("keyup", (e) => {
-    if (e.code !== "Space" || typing(e)) return;
-    endTalking();
   });
 
   renderLanguagePicker();
