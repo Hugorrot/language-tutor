@@ -64,6 +64,15 @@ def create_learner(body: LearnerCreate):
     return {"learner_id": learner_id}
 
 
+@api.get("/learners")
+def list_learners():
+    """All profiles on this computer, for the profile switcher. There are no passwords: the app runs
+    locally and a profile only separates one person's conversations, mistakes and cards from another's."""
+    rows = db.query("SELECT id, name FROM learners ORDER BY id")
+    return {"learners": [{"learner_id": r["id"], "name": r["name"], "languages": db.languages_of(r["id"])}
+                         for r in rows]}
+
+
 @api.get("/learner/{learner_id}")
 def get_learner(learner_id: int):
     l = _learner_or_404(learner_id)
@@ -80,6 +89,10 @@ def update_learner(learner_id: int, body: LearnerUpdate):
     what was already generated stays in the old language."""
     _learner_or_404(learner_id)
     changes = body.model_dump(exclude_none=True)
+    if "name" in changes:
+        changes["name"] = changes["name"].strip()
+        if not changes["name"]:
+            raise HTTPException(400, "The name cannot be empty")
     if "explanation_language" in changes:
         _language_or_400(changes["explanation_language"])
     for field, value in changes.items():          # field names come from the schema, not the user

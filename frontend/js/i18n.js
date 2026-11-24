@@ -9,6 +9,7 @@
 // In JS:    t("key", { var: value }), langName("French"), onUiLanguageChange(callback)
 
 const LANGS = ["Italian", "Spanish", "French", "English", "German", "Portuguese"];
+export const LANGUAGES = LANGS;
 const CODES = { English: "en", Italian: "it", Spanish: "es", French: "fr", German: "de", Portuguese: "pt" };
 
 // Language names in each interface language (order of LANGS)
@@ -69,6 +70,28 @@ const STRINGS = {
     s_sessions: "Sessions", s_minutes: "Minutes spoken (est.)", s_accuracy: "Review accuracy", s_cards: "Cards",
     s_due: "Due now", s_level: "Level",
     no_lang_mistakes: "No {lang} mistakes yet. Have a conversation first.", fixed: "fixed", in_sessions: "{n} sessions",
+    // New interface (React)
+    onb_first: "First, your name.", onb_little: "A little practice starts here.", learning_prefs: "Learning preferences",
+    next_conversation: "Your next conversation", settings: "Settings", loop_text: "Speak. Stumble. Try again.",
+    hint_voice: "Tap to record, tap again to send. Hold to talk, or slide left to cancel.", speak_lang: "Speak {lang}", recap_title: "Your conversation recap",
+    swipe_hint: "Swipe a card to remove it, or use its Remove button. The rest are in Review.", review_title: "Your daily practice", review_sub: "Your words. Another chance to make them yours.",
+    progress_title: "Your learning progress", vs_idle: "Ready when you are", vs_listening: "Listening",
+    vs_thinking: "Preparing your reply", vs_speaking: "Tutor is speaking", record_aria: "Record your message",
+    comfy: "Make yourself comfortable", audio_prefs: "Audio preferences", autoplay: "Play tutor audio automatically",
+    autoplay_note: "You can still play flashcard audio yourself.", speed: "Tutor playback speed", speed_note: "A slower pace can make new words easier to catch.",
+    t_start_fail: "Could not start the session", t_send_fail: "Message was not sent", t_mic_fail: "Microphone unavailable",
+    t_mic_fail_d: "Check your browser microphone permission, or type your message.", t_cards_one: "{n} new practice card ready to review.", t_cards_other: "{n} new practice cards ready to review.",
+    t_end_fail: "Could not finish the session", t_review_saved: "Review saved", t_review_saved_d: "Your next review has been scheduled.",
+    t_review_fail: "Could not save your review", t_review_fail_d: "Your card is still here. ", t_card_removed: "Card removed",
+    t_card_removed_d: "It will no longer appear in your reviews.", t_card_fail: "Could not remove the card", rec_cancelled: "Recording cancelled.",
+    practice_card: "Practice card: {front}", remove_card: "Remove card: {front}", due_tag: "{n} due",
+    preview_notice: "Sample mode · no conversations are saved", nav_home: "Home", nav_profile: "Profile",
+    profile_title: "Your profile", save: "Save", saving: "Saving…",
+    t_profile_saved: "Profile saved", expl_note: "Summaries, grammar rules and new cards use this language. Older ones stay as they are.", profiles_title: "Profiles on this computer",
+    profiles_hint: "Each profile has its own conversations, mistakes and cards.", switch_to: "Switch", current_profile: "Current",
+    new_profile: "Create a new profile", langs_practised: "Languages practised", none_yet: "none yet",
+    t_switched: "Profile switched", t_switched_d: "Welcome back, {name}.", new_profile_eyebrow: "New profile",
+    t_profile_fail: "Could not save the profile",
   },
 
   Italian: {
@@ -118,6 +141,28 @@ const STRINGS = {
     s_due: "Da ripassare", s_level: "Livello",
     no_lang_mistakes: "Ancora nessun errore in {lang}. Fai prima una conversazione.", fixed: "risolto",
     in_sessions: "{n} sessioni",
+    // New interface (React)
+    onb_first: "Prima di tutto, il tuo nome.", onb_little: "Un po' di pratica comincia da qui.", learning_prefs: "Preferenze di studio",
+    next_conversation: "La tua prossima conversazione", settings: "Impostazioni", loop_text: "Parla. Inciampa. Riprova.",
+    hint_voice: "Tocca per registrare, tocca di nuovo per inviare. Tieni premuto per parlare, o scorri a sinistra per annullare.", speak_lang: "Parla in {lang}", recap_title: "Il riepilogo della conversazione",
+    swipe_hint: "Scorri una carta per rimuoverla, o usa il suo pulsante Rimuovi. Le altre sono nel Ripasso.", review_title: "La tua pratica quotidiana", review_sub: "Le tue parole. Un'altra occasione per farle tue.",
+    progress_title: "I tuoi progressi", vs_idle: "Pronto quando vuoi", vs_listening: "Ti ascolto",
+    vs_thinking: "Preparo la risposta", vs_speaking: "Il tutor sta parlando", record_aria: "Registra il tuo messaggio",
+    comfy: "Mettiti comodo", audio_prefs: "Preferenze audio", autoplay: "Riproduci l'audio del tutor automaticamente",
+    autoplay_note: "Puoi comunque ascoltare l'audio delle carte quando vuoi.", speed: "Velocità del tutor", speed_note: "Un ritmo più lento aiuta a capire le parole nuove.",
+    t_start_fail: "Impossibile avviare la sessione", t_send_fail: "Messaggio non inviato", t_mic_fail: "Microfono non disponibile",
+    t_mic_fail_d: "Controlla il permesso del microfono nel browser, oppure scrivi il messaggio.", t_cards_one: "{n} nuova carta pronta per il ripasso.", t_cards_other: "{n} nuove carte pronte per il ripasso.",
+    t_end_fail: "Impossibile terminare la sessione", t_review_saved: "Ripasso salvato", t_review_saved_d: "Il prossimo ripasso è stato programmato.",
+    t_review_fail: "Impossibile salvare il ripasso", t_review_fail_d: "La carta è ancora qui. ", t_card_removed: "Carta rimossa",
+    t_card_removed_d: "Non comparirà più nei ripassi.", t_card_fail: "Impossibile rimuovere la carta", rec_cancelled: "Registrazione annullata.",
+    practice_card: "Carta: {front}", remove_card: "Rimuovi la carta: {front}", due_tag: "{n} da ripassare",
+    preview_notice: "Modalità di prova · le conversazioni non vengono salvate", nav_home: "Home", nav_profile: "Profilo",
+    profile_title: "Il tuo profilo", save: "Salva", saving: "Salvataggio…",
+    t_profile_saved: "Profilo salvato", expl_note: "Riepiloghi, regole e nuove carte useranno questa lingua. Quelli già creati restano come sono.", profiles_title: "Profili su questo computer",
+    profiles_hint: "Ogni profilo ha le sue conversazioni, i suoi errori e le sue carte.", switch_to: "Passa a questo", current_profile: "Attuale",
+    new_profile: "Crea un nuovo profilo", langs_practised: "Lingue praticate", none_yet: "ancora nessuna",
+    t_switched: "Profilo cambiato", t_switched_d: "Bentornato, {name}.", new_profile_eyebrow: "Nuovo profilo",
+    t_profile_fail: "Impossibile salvare il profilo",
   },
 
   Spanish: {
@@ -167,6 +212,28 @@ const STRINGS = {
     s_due: "Para repasar", s_level: "Nivel",
     no_lang_mistakes: "Aún no hay errores en {lang}. Primero ten una conversación.", fixed: "corregido",
     in_sessions: "{n} sesiones",
+    // New interface (React)
+    onb_first: "Primero, tu nombre.", onb_little: "Aquí empieza un poco de práctica.", learning_prefs: "Preferencias de aprendizaje",
+    next_conversation: "Tu próxima conversación", settings: "Ajustes", loop_text: "Habla. Tropieza. Inténtalo otra vez.",
+    hint_voice: "Toca para grabar, toca otra vez para enviar. Mantén pulsado para hablar o desliza a la izquierda para cancelar.", speak_lang: "Habla en {lang}", recap_title: "Resumen de tu conversación",
+    swipe_hint: "Desliza una tarjeta para quitarla, o usa su botón Quitar. Las demás están en Repaso.", review_title: "Tu práctica diaria", review_sub: "Tus palabras. Otra oportunidad para hacerlas tuyas.",
+    progress_title: "Tu progreso", vs_idle: "Listo cuando quieras", vs_listening: "Escuchando",
+    vs_thinking: "Preparando la respuesta", vs_speaking: "El tutor está hablando", record_aria: "Graba tu mensaje",
+    comfy: "Ponte cómodo", audio_prefs: "Preferencias de audio", autoplay: "Reproducir el audio del tutor automáticamente",
+    autoplay_note: "Puedes seguir escuchando el audio de las tarjetas tú mismo.", speed: "Velocidad del tutor", speed_note: "Un ritmo más lento ayuda a captar las palabras nuevas.",
+    t_start_fail: "No se pudo empezar la sesión", t_send_fail: "El mensaje no se envió", t_mic_fail: "Micrófono no disponible",
+    t_mic_fail_d: "Revisa el permiso del micrófono en el navegador, o escribe tu mensaje.", t_cards_one: "{n} tarjeta nueva lista para repasar.", t_cards_other: "{n} tarjetas nuevas listas para repasar.",
+    t_end_fail: "No se pudo terminar la sesión", t_review_saved: "Repaso guardado", t_review_saved_d: "Tu próximo repaso está programado.",
+    t_review_fail: "No se pudo guardar el repaso", t_review_fail_d: "Tu tarjeta sigue aquí. ", t_card_removed: "Tarjeta quitada",
+    t_card_removed_d: "Ya no aparecerá en tus repasos.", t_card_fail: "No se pudo quitar la tarjeta", rec_cancelled: "Grabación cancelada.",
+    practice_card: "Tarjeta: {front}", remove_card: "Quitar la tarjeta: {front}", due_tag: "{n} para repasar",
+    preview_notice: "Modo de prueba · las conversaciones no se guardan", nav_home: "Inicio", nav_profile: "Perfil",
+    profile_title: "Tu perfil", save: "Guardar", saving: "Guardando…",
+    t_profile_saved: "Perfil guardado", expl_note: "Los resúmenes, las reglas y las tarjetas nuevas usarán este idioma. Los anteriores se quedan como están.", profiles_title: "Perfiles en este ordenador",
+    profiles_hint: "Cada perfil tiene sus propias conversaciones, errores y tarjetas.", switch_to: "Cambiar", current_profile: "Actual",
+    new_profile: "Crear un perfil nuevo", langs_practised: "Idiomas practicados", none_yet: "ninguno todavía",
+    t_switched: "Perfil cambiado", t_switched_d: "Bienvenido de nuevo, {name}.", new_profile_eyebrow: "Perfil nuevo",
+    t_profile_fail: "No se pudo guardar el perfil",
   },
 
   French: {
@@ -216,6 +283,28 @@ const STRINGS = {
     s_due: "À réviser", s_level: "Niveau",
     no_lang_mistakes: "Pas encore d'erreurs en {lang}. Commence par une conversation.", fixed: "corrigé",
     in_sessions: "{n} sessions",
+    // New interface (React)
+    onb_first: "D'abord, ton prénom.", onb_little: "Un peu de pratique commence ici.", learning_prefs: "Préférences d'apprentissage",
+    next_conversation: "Ta prochaine conversation", settings: "Réglages", loop_text: "Parle. Trébuche. Recommence.",
+    hint_voice: "Touche pour enregistrer, touche encore pour envoyer. Maintiens pour parler, ou glisse à gauche pour annuler.", speak_lang: "Parle en {lang}", recap_title: "Le bilan de ta conversation",
+    swipe_hint: "Fais glisser une carte pour la supprimer, ou utilise son bouton Supprimer. Les autres sont dans Révision.", review_title: "Ta pratique du jour", review_sub: "Tes mots. Une autre chance de te les approprier.",
+    progress_title: "Tes progrès", vs_idle: "Prêt quand tu veux", vs_listening: "Je t'écoute",
+    vs_thinking: "Je prépare la réponse", vs_speaking: "Le tuteur parle", record_aria: "Enregistre ton message",
+    comfy: "Installe-toi confortablement", audio_prefs: "Préférences audio", autoplay: "Lire l'audio du tuteur automatiquement",
+    autoplay_note: "Tu peux toujours écouter l'audio des cartes toi-même.", speed: "Vitesse du tuteur", speed_note: "Un rythme plus lent aide à saisir les nouveaux mots.",
+    t_start_fail: "Impossible de démarrer la session", t_send_fail: "Le message n'a pas été envoyé", t_mic_fail: "Micro indisponible",
+    t_mic_fail_d: "Vérifie l'autorisation du micro dans le navigateur, ou écris ton message.", t_cards_one: "{n} nouvelle carte prête à réviser.", t_cards_other: "{n} nouvelles cartes prêtes à réviser.",
+    t_end_fail: "Impossible de terminer la session", t_review_saved: "Révision enregistrée", t_review_saved_d: "Ta prochaine révision est programmée.",
+    t_review_fail: "Impossible d'enregistrer la révision", t_review_fail_d: "Ta carte est toujours là. ", t_card_removed: "Carte supprimée",
+    t_card_removed_d: "Elle n'apparaîtra plus dans tes révisions.", t_card_fail: "Impossible de supprimer la carte", rec_cancelled: "Enregistrement annulé.",
+    practice_card: "Carte : {front}", remove_card: "Supprimer la carte : {front}", due_tag: "{n} à réviser",
+    preview_notice: "Mode démo · les conversations ne sont pas enregistrées", nav_home: "Accueil", nav_profile: "Profil",
+    profile_title: "Ton profil", save: "Enregistrer", saving: "Enregistrement…",
+    t_profile_saved: "Profil enregistré", expl_note: "Les bilans, les règles et les nouvelles cartes utiliseront cette langue. Les anciens restent tels quels.", profiles_title: "Profils sur cet ordinateur",
+    profiles_hint: "Chaque profil a ses propres conversations, erreurs et cartes.", switch_to: "Choisir", current_profile: "Actuel",
+    new_profile: "Créer un nouveau profil", langs_practised: "Langues pratiquées", none_yet: "aucune pour l'instant",
+    t_switched: "Profil changé", t_switched_d: "Bon retour, {name}.", new_profile_eyebrow: "Nouveau profil",
+    t_profile_fail: "Impossible d'enregistrer le profil",
   },
 
   German: {
@@ -265,6 +354,28 @@ const STRINGS = {
     s_due: "Jetzt fällig", s_level: "Niveau",
     no_lang_mistakes: "Noch keine Fehler auf {lang}. Führ zuerst ein Gespräch.", fixed: "behoben",
     in_sessions: "{n} Sitzungen",
+    // New interface (React)
+    onb_first: "Zuerst dein Name.", onb_little: "Hier beginnt ein bisschen Übung.", learning_prefs: "Lerneinstellungen",
+    next_conversation: "Dein nächstes Gespräch", settings: "Einstellungen", loop_text: "Sprechen. Stolpern. Nochmal versuchen.",
+    hint_voice: "Tippen zum Aufnehmen, nochmal tippen zum Senden. Gedrückt halten zum Sprechen oder nach links wischen zum Abbrechen.", speak_lang: "Sprich {lang}", recap_title: "Rückblick auf dein Gespräch",
+    swipe_hint: "Wische eine Karte weg oder nutze ihren Entfernen-Knopf. Die anderen findest du unter Wiederholen.", review_title: "Deine tägliche Übung", review_sub: "Deine Wörter. Noch eine Chance, sie dir zu eigen zu machen.",
+    progress_title: "Dein Lernfortschritt", vs_idle: "Bereit, wenn du es bist", vs_listening: "Ich höre zu",
+    vs_thinking: "Antwort wird vorbereitet", vs_speaking: "Der Tutor spricht", record_aria: "Nachricht aufnehmen",
+    comfy: "Mach es dir bequem", audio_prefs: "Audio-Einstellungen", autoplay: "Tutor-Audio automatisch abspielen",
+    autoplay_note: "Karten-Audio kannst du weiterhin selbst abspielen.", speed: "Sprechtempo des Tutors", speed_note: "Ein langsameres Tempo hilft, neue Wörter zu verstehen.",
+    t_start_fail: "Sitzung konnte nicht gestartet werden", t_send_fail: "Nachricht wurde nicht gesendet", t_mic_fail: "Mikrofon nicht verfügbar",
+    t_mic_fail_d: "Prüfe die Mikrofonberechtigung im Browser oder tippe deine Nachricht.", t_cards_one: "{n} neue Karte bereit zum Wiederholen.", t_cards_other: "{n} neue Karten bereit zum Wiederholen.",
+    t_end_fail: "Sitzung konnte nicht beendet werden", t_review_saved: "Wiederholung gespeichert", t_review_saved_d: "Deine nächste Wiederholung ist geplant.",
+    t_review_fail: "Wiederholung konnte nicht gespeichert werden", t_review_fail_d: "Deine Karte ist noch da. ", t_card_removed: "Karte entfernt",
+    t_card_removed_d: "Sie erscheint nicht mehr in deinen Wiederholungen.", t_card_fail: "Karte konnte nicht entfernt werden", rec_cancelled: "Aufnahme abgebrochen.",
+    practice_card: "Karte: {front}", remove_card: "Karte entfernen: {front}", due_tag: "{n} fällig",
+    preview_notice: "Beispielmodus · Gespräche werden nicht gespeichert", nav_home: "Start", nav_profile: "Profil",
+    profile_title: "Dein Profil", save: "Speichern", saving: "Wird gespeichert…",
+    t_profile_saved: "Profil gespeichert", expl_note: "Zusammenfassungen, Regeln und neue Karten verwenden diese Sprache. Ältere bleiben, wie sie sind.", profiles_title: "Profile auf diesem Computer",
+    profiles_hint: "Jedes Profil hat eigene Gespräche, Fehler und Karten.", switch_to: "Wechseln", current_profile: "Aktuell",
+    new_profile: "Neues Profil erstellen", langs_practised: "Geübte Sprachen", none_yet: "noch keine",
+    t_switched: "Profil gewechselt", t_switched_d: "Willkommen zurück, {name}.", new_profile_eyebrow: "Neues Profil",
+    t_profile_fail: "Profil konnte nicht gespeichert werden",
   },
 
   Portuguese: {
@@ -314,6 +425,28 @@ const STRINGS = {
     s_due: "Para revisar", s_level: "Nível",
     no_lang_mistakes: "Ainda não há erros em {lang}. Faça uma conversa primeiro.", fixed: "corrigido",
     in_sessions: "{n} sessões",
+    // New interface (React)
+    onb_first: "Primeiro, seu nome.", onb_little: "Um pouco de prática começa aqui.", learning_prefs: "Preferências de estudo",
+    next_conversation: "Sua próxima conversa", settings: "Configurações", loop_text: "Fale. Tropece. Tente de novo.",
+    hint_voice: "Toque para gravar, toque de novo para enviar. Segure para falar ou deslize para a esquerda para cancelar.", speak_lang: "Fale {lang}", recap_title: "Resumo da sua conversa",
+    swipe_hint: "Deslize um cartão para removê-lo, ou use o botão Remover. Os outros estão na Revisão.", review_title: "Sua prática diária", review_sub: "Suas palavras. Mais uma chance de torná-las suas.",
+    progress_title: "Seu progresso", vs_idle: "Pronto quando você estiver", vs_listening: "Ouvindo",
+    vs_thinking: "Preparando a resposta", vs_speaking: "O tutor está falando", record_aria: "Grave sua mensagem",
+    comfy: "Fique à vontade", audio_prefs: "Preferências de áudio", autoplay: "Tocar o áudio do tutor automaticamente",
+    autoplay_note: "Você ainda pode ouvir o áudio dos cartões quando quiser.", speed: "Velocidade do tutor", speed_note: "Um ritmo mais lento ajuda a entender palavras novas.",
+    t_start_fail: "Não foi possível começar a sessão", t_send_fail: "A mensagem não foi enviada", t_mic_fail: "Microfone indisponível",
+    t_mic_fail_d: "Verifique a permissão do microfone no navegador, ou escreva sua mensagem.", t_cards_one: "{n} cartão novo pronto para revisar.", t_cards_other: "{n} cartões novos prontos para revisar.",
+    t_end_fail: "Não foi possível encerrar a sessão", t_review_saved: "Revisão salva", t_review_saved_d: "Sua próxima revisão foi agendada.",
+    t_review_fail: "Não foi possível salvar a revisão", t_review_fail_d: "Seu cartão continua aqui. ", t_card_removed: "Cartão removido",
+    t_card_removed_d: "Ele não vai mais aparecer nas suas revisões.", t_card_fail: "Não foi possível remover o cartão", rec_cancelled: "Gravação cancelada.",
+    practice_card: "Cartão: {front}", remove_card: "Remover o cartão: {front}", due_tag: "{n} para revisar",
+    preview_notice: "Modo de demonstração · as conversas não são salvas", nav_home: "Início", nav_profile: "Perfil",
+    profile_title: "Seu perfil", save: "Salvar", saving: "Salvando…",
+    t_profile_saved: "Perfil salvo", expl_note: "Resumos, regras e cartões novos vão usar este idioma. Os anteriores ficam como estão.", profiles_title: "Perfis neste computador",
+    profiles_hint: "Cada perfil tem suas próprias conversas, erros e cartões.", switch_to: "Trocar", current_profile: "Atual",
+    new_profile: "Criar um novo perfil", langs_practised: "Idiomas praticados", none_yet: "nenhum ainda",
+    t_switched: "Perfil trocado", t_switched_d: "Bem-vindo de volta, {name}.", new_profile_eyebrow: "Novo perfil",
+    t_profile_fail: "Não foi possível salvar o perfil",
   },
 };
 
@@ -363,6 +496,7 @@ export function setUiLanguage(language) {
   document.documentElement.lang = CODES[ui];
   applyStatic();
   listeners.forEach((fn) => fn(ui));
+  window.dispatchEvent(new CustomEvent("tutor:ui-language", { detail: ui }));   // React parts listen to this
 }
 
 export function onUiLanguageChange(fn) { listeners.push(fn); }

@@ -34,8 +34,15 @@ A learner can practise several languages. `target_language` is the language of t
 session (the app opens on it), `level` is their level in that language, `languages` are the ones
 they have practised.
 
+### `GET /api/learners`
+Every profile on this computer (for switching profile; there are no passwords).
+```json
+{ "learners": [ { "learner_id": 1, "name": "Matteo", "languages": ["Italian", "English"] } ] }
+```
+
 ### `PATCH /api/learner/{learner_id}`
-Change profile settings. Send only what changes. Returns the learner like `GET`.
+Change profile settings (`name`, `goal`, `explanation_language`). Send only what changes.
+Returns the learner like `GET`. An empty name is refused (400).
 ```json
 { "explanation_language": "Italian" }
 ```

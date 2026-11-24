@@ -1,3 +1,4 @@
+import { getAudioPreferences } from "./preferences.js";
 // Mic recording, audio playback, and live audio levels for the orb. Owner: voice pipeline (with frontend).
 
 let ctx = null;          // one shared AudioContext, created on the first user gesture
@@ -58,13 +59,22 @@ export function readLevels() {
 
 export async function startRecording() {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  recorder = new MediaRecorder(stream);
-  chunks = [];
-  recorder.ondataavailable = (e) => e.data.size > 0 && chunks.push(e.data);
-  recorder.start();
-  if (await unlockAudio()) {
-    micSource = ctx.createMediaStreamSource(stream);
-    watch(micSource);          // analysed only, not played back (no echo)
+  try {
+    recorder = new MediaRecorder(stream);
+    chunks = [];
+    recorder.ondataavailable = (e) => e.data.size > 0 && chunks.push(e.data);
+    recorder.start();
+    if (await unlockAudio()) {
+      micSource = ctx.createMediaStreamSource(stream);
+      watch(micSource);
+    }
+  } catch (error) {
+    stream.getTracks().forEach(track => track.stop());
+    recorder = null;
+    micSource?.disconnect();
+    micSource = null;
+    analyser = null;
+    throw error;
   }
 }
 
@@ -90,6 +100,7 @@ export async function playBase64(b64) {
   if (current) current.pause();
   const audio = new Audio("data:audio/mpeg;base64," + b64);
   current = audio;
+  audio.playbackRate = getAudioPreferences().playbackRate;
   const ac = await unlockAudio();
   let source = null;
   if (ac && ac.state === "running") {
@@ -112,3 +123,10 @@ export async function playBase64(b64) {
 export function stopPlayback() {
   if (current) current.pause();
 }
+
+window.addEventListener("tutor:audio-preferences", event => {
+  if (current) {
+    current.playbackRate = event.detail.playbackRate;
+    if (!event.detail.autoPlay) stopPlayback();
+  }
+});

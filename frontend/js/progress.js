@@ -1,4 +1,5 @@
-// Progress tab: one page per language (level, sessions, cards, mistakes, memory search).
+// Progress tab: one page per language (level, sessions, cards, most frequent mistakes).
+// Each mistake opens to show every sentence where the learner made it.
 import { api } from "./api.js";
 import { getLanguage, getLearnerId } from "./app.js";
 import { renderChips } from "./ui.js";
@@ -6,9 +7,13 @@ import { getLocale, langName, onUiLanguageChange, t } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 let language = null;      // the language shown; starts on the one being practised
+let last = null;          // last progress response, to redraw the stats in another interface language
 
-function stat(label, value) {
-  return `<div class="stat"><div class="value">${value}</div><div class="label">${label}</div></div>`;
+// The stats are drawn by React (src/enhancements.jsx mountStats, with the count-up animation).
+function renderStats(p) {
+  window.dispatchEvent(new CustomEvent("tutor:progress", { detail: { ...p, labels: {
+    sessions: t("s_sessions"), minutes: t("s_minutes"), accuracy: t("s_accuracy"),
+    cards: t("s_cards"), due: t("s_due"), level: t("s_level") } } }));
 }
 
 // Opening the tab shows the language being practised; the chips switch to another one.
@@ -22,14 +27,8 @@ export async function loadProgress(choice = null) {
     language, (v) => { loadProgress(v); });
   $("progress-title").textContent = t("level_title", { lang: langName(p.language), level: p.level });
 
-  const acc = p.review_accuracy === null ? "–" : Math.round(p.review_accuracy * 100) + "%";
-  $("stats").innerHTML =
-    stat(t("s_sessions"), p.sessions) +
-    stat(t("s_minutes"), p.minutes_spoken) +
-    stat(t("s_accuracy"), acc) +
-    stat(t("s_cards"), p.cards_total) +
-    stat(t("s_due"), p.cards_due) +
-    stat(t("s_level"), p.level);
+  last = p;
+  renderStats(p);
 
   $("top-errors").innerHTML = "";
   if (!p.top_errors.length) {
@@ -110,5 +109,5 @@ function occurrence(o) {
 }
 
 onUiLanguageChange(() => {
-  if (!$("tab-progress").classList.contains("hidden")) loadProgress(language);
+  if (!$("tab-progress").classList.contains("hidden") && last) loadProgress(language);
 });

@@ -1,7 +1,8 @@
 // Every call to the backend lives here. Matches API.md.
 // USE_MOCK = true -> fake responses, so the UI works without the backend.
 
-export const USE_MOCK = false;
+// Preview is explicit and isolated from the real learner profile.
+export const USE_MOCK = new URLSearchParams(location.search).get("preview") === "1";
 
 // Served by FastAPI -> same origin. Opened from VS Code Live Server (:5500) -> call the backend on :8000.
 const API_BASE = location.port === "5500" ? "http://localhost:8000/api" : "/api";
@@ -28,6 +29,7 @@ async function request(method, path, body, isForm = false) {
 export const api = {
   createLearner: (data) => request("POST", "/learner", data),
   getLearner: (id) => request("GET", `/learner/${id}`),
+  listLearners: () => request("GET", "/learners"),
   updateLearner: (id, changes) => request("PATCH", `/learner/${id}`, changes),
 
   startSession: (learnerId, scenario, targetLanguage) =>
@@ -65,15 +67,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function mock(method, path, body) {
   await sleep(400);
   if (path === "/learner") return { learner_id: 1 };
+  if (path === "/learners") return { learners: [{ learner_id: 1, name: "Test", languages: ["Italian"] }] };
   if (method === "PATCH" && path.startsWith("/learner/"))
-    return { learner_id: 1, name: "Test", target_language: "Italian", explanation_language: body?.explanation_language || "English",
-             goal: "", level: "A2", languages: ["Italian"], supported_languages: ["Italian", "Spanish", "French", "English", "German", "Portuguese"] };
+    return { learner_id: 1, name: "Test", target_language: "Italian", explanation_language: "English",
+             goal: "", level: "A2", languages: ["Italian"], supported_languages: ["Italian", "Spanish", "French", "English", "German", "Portuguese"],
+             ...body };
   if (path.startsWith("/learner/"))
     return { learner_id: 1, name: "Test", target_language: "Italian", explanation_language: "English", goal: "", level: "A2",
              languages: ["Italian"], supported_languages: ["Italian", "Spanish", "French", "English", "German", "Portuguese"] };
   if (path === "/session/start")
     return { session_id: 1, tutor_text: "Ciao! Benvenuto al ristorante. Cosa vuoi ordinare?", audio_b64: null, targets: ["prenotare"],
-             target_language: "Italian", level: "A2" };
+             target_language: body?.target_language || "Italian", level: "A2" };
   if (path === "/session/turn")
     return { user_text: "Io voglio una pizza margherita", tutor_text: "Ottimo, vuoi una pizza margherita! E da bere?",
              audio_b64: null, timings_ms: { asr: 300, llm: 500, tts: 300, total: 1100 } };
