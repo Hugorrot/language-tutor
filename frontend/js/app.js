@@ -1,9 +1,10 @@
 // Entry point: profiles, onboarding, interface language and tab switching. Each tab lives in its own file.
 import { api, USE_MOCK } from "./api.js";
-import { goHome, initTalk, renderLanguagePicker } from "./talk.js";
+import { initTalk, leaveConversation, renderLanguagePicker } from "./talk.js";
 import { initReview, loadReview } from "./review.js";
 import { loadProgress } from "./progress.js";
 import { initProfile, loadProfile } from "./profile.js";
+import { loadHome } from "./home.js";
 import { browserLanguage, getUiLanguage, langName, LANGUAGES, onUiLanguageChange, setUiLanguage, t } from "./i18n.js";
 import { renderChips } from "./ui.js";
 import { notify } from "./preferences.js";
@@ -17,12 +18,20 @@ export function getLearnerId() {
   return Number(storage.getItem(learnerKey)) || null;
 }
 
-// The learner's profile, loaded once. target_language = the language they practise right now
-// (chosen at the start of each session, remembered by the backend).
+// The learner's profile, loaded once. target_language = the language they practise right now.
+// Choosing a language anywhere (Talk settings, Review, Progress) changes it for every section, and it is
+// remembered on this computer until the learner picks another one. The backend also stores it at each session.
 let learner = null;
+let newProfile = false;          // created in this visit: Home says "Welcome", not "Welcome back"
 export const getLearner = () => learner;
+export const isNewProfile = () => newProfile;
 export const getLanguage = () => learner?.target_language || "Italian";
-export function setLanguage(language) { if (learner) learner.target_language = language; }
+const languageKey = () => `study_language_${getLearnerId()}`;
+export function setLanguage(language) {
+  if (!learner || !language) return;
+  learner.target_language = language;
+  storage.setItem(languageKey(), language);
+}
 export const getExplanationLanguage = () => learner?.explanation_language || "English";
 
 // Change profile fields (name, goal, explanation_language). The whole interface follows the explanation language.
@@ -38,6 +47,8 @@ export async function loadLearner() {
   if (!id) return null;
   try {
     learner = await api.getLearner(id);
+    const chosen = storage.getItem(languageKey());
+    if (chosen && learner.supported_languages.includes(chosen)) learner.target_language = chosen;
   } catch (e) {
     // The database was reset: start again with onboarding.
     if (e.status === 404) storage.removeItem(learnerKey);
@@ -48,14 +59,15 @@ export async function loadLearner() {
 
 // Use another profile: everything (cards, progress, interface language) follows it.
 export async function switchProfile(learnerId) {
-  if (!(await goHome())) return false;          // a conversation is open and the learner chose to stay
+  if (!(await leaveConversation())) return false;          // a conversation is open and the learner chose to stay
   storage.setItem(learnerKey, learnerId);
+  newProfile = false;
   await loadLearner();
   setUiLanguage(getExplanationLanguage());
   renderLanguagePicker();
   refreshDueBadge();
   notify(t("t_switched"), t("t_switched_d", { name: learner?.name || "" }));
-  location.hash = "#talk";
+  if (location.hash === "#home") route(); else location.hash = "#home";
   return true;
 }
 
@@ -71,7 +83,7 @@ export async function refreshDueBadge() {
   } catch (e) { console.warn(e); }
 }
 
-const TABS = ["talk", "review", "progress", "profile"];
+const TABS = ["home", "talk", "review", "progress", "profile"];
 
 function showTab(name) {
   window.scrollTo({ top: 0, behavior: "instant" });
@@ -79,18 +91,20 @@ function showTab(name) {
   TABS.forEach((t) => $(`tab-${t}`).classList.toggle("hidden", t !== name));
   window.dispatchEvent(new CustomEvent("tutor:view", { detail: name }));
   if (!getLearnerId()) return;
+  if (name === "home") loadHome();
+  if (name === "talk" && !$("talk-setup").classList.contains("hidden")) renderLanguagePicker();   // language chosen elsewhere
   if (name === "review") loadReview();
   if (name === "progress") loadProgress();
   if (name === "profile") loadProfile();
 }
 
-// Each tab has its own address (#talk, #review, #progress, #profile). Clicking a tab is a normal link,
+// Each tab has its own address (#home, #talk, #review, #progress, #profile). Clicking a tab is a normal link,
 // so the browser keeps the history and the back/forward buttons work.
 function route() {
   const name = location.hash.slice(1);
   if (!TABS.includes(name)) {
-    history.replaceState(null, "", "#talk");
-    return showTab("talk");
+    history.replaceState(null, "", "#home");
+    return showTab("home");
   }
   showTab(name);
 }
@@ -148,14 +162,15 @@ function initOnboarding() {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
     const switching = !!getLearnerId();
-    if (switching && !(await goHome())) return;
+    if (switching && !(await leaveConversation())) return;
     const { learner_id } = await api.createLearner(data);
     storage.setItem(learnerKey, learner_id);
+    newProfile = true;
     await loadLearner();
     setUiLanguage(getExplanationLanguage());
     renderLanguagePicker();
     hideOnboarding();
-    if (location.hash === "#talk") route(); else location.hash = "#talk";
+    if (location.hash === "#home") route(); else location.hash = "#home";
     refreshDueBadge();
   });
 
@@ -171,11 +186,6 @@ async function boot() {
   initReview();
   initProfile();
   window.addEventListener("hashchange", route);
-  // Home (in the dock): back to the start screen from any tab or view
-  window.addEventListener("tutor:home", async () => {
-    if (!getLearnerId()) return;
-    if ((await goHome()) && location.hash !== "#talk") location.hash = "#talk";
-  });
   route();
   refreshDueBadge();
 }

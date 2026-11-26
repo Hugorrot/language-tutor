@@ -1,7 +1,7 @@
 // Progress tab: one page per language (level, sessions, cards, most frequent mistakes).
 // Each mistake opens to show every sentence where the learner made it.
 import { api } from "./api.js";
-import { getLanguage, getLearnerId } from "./app.js";
+import { getLanguage, getLearnerId, setLanguage } from "./app.js";
 import { renderChips } from "./ui.js";
 import { getLocale, langName, onUiLanguageChange, t } from "./i18n.js";
 
@@ -24,7 +24,7 @@ export async function loadProgress(choice = null) {
 
   renderChips($("progress-languages"),
     p.languages.length > 1 ? p.languages.map((l) => ({ value: l, label: langName(l) })) : [],
-    language, (v) => { loadProgress(v); });
+    language, (v) => { setLanguage(v); loadProgress(v); });     // stays chosen in every section
   $("progress-title").textContent = t("level_title", { lang: langName(p.language), level: p.level });
 
   last = p;

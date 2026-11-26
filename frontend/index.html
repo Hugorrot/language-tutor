@@ -7,7 +7,7 @@
   <title>Voice Tutor</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.35' cy='.35'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.4' stop-color='%233ee08f'/%3E%3Cstop offset='1' stop-color='%23063'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23g)'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="generated/app.css?v=c600b88d726d">
+  <link rel="stylesheet" href="generated/app.css?v=738722a5a271">
 </head>
 <body>
   <div id="scanner-background" aria-hidden="true"></div>
@@ -22,8 +22,8 @@
   <section id="onboarding" class="onboarding hidden">
     <div class="glass panel narrow reveal">
       <p id="onboarding-eyebrow" class="eyebrow hidden" data-i18n="new_profile_eyebrow">New profile</p>
-      <h1 class="title" data-split-text="onb_first">First, your name.</h1>
-      <p class="muted" data-i18n="onb_little">A little practice starts here.</p>
+      <h1 class="title" data-split-text="onb_welcome">Welcome.</h1>
+      <p class="muted" data-i18n="onb_first">First, your name.</p>
       <form id="onboarding-form" class="form">
         <label><span data-i18n="your_name">Your name</span> <input name="name" required autocomplete="given-name"></label>
         <details class="onboarding-preferences"><summary data-i18n="learning_prefs">Learning preferences</summary>
@@ -46,6 +46,34 @@
   </section>
 
   <main class="hidden">
+    <!-- HOME -->
+    <section id="tab-home" class="view hidden">
+      <div class="home">
+        <p id="home-date" class="eyebrow reveal"></p>
+        <!-- Text and name set by js/home.js ("Welcome back, Matteo.") -->
+        <h1 id="home-title" class="title" data-split-text="home_welcome_back" data-split-vars='{"name":""}'></h1>
+        <p id="home-sub" class="muted reveal"></p>
+        <div class="home-cards reveal">
+          <a class="home-card" href="#talk">
+            <span class="home-card-label" data-i18n="nav_talk">Talk</span>
+            <strong id="home-talk"></strong>
+            <span class="home-card-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="home-card" href="#review">
+            <span class="home-card-label" data-i18n="nav_review">Review</span>
+            <strong id="home-review"></strong>
+            <span class="home-card-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="home-card" href="#progress">
+            <span class="home-card-label" data-i18n="home_focus">To work on</span>
+            <strong id="home-focus"></strong>
+            <span id="home-focus-meta" class="home-card-meta"></span>
+            <span class="home-card-arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- TALK -->
     <section id="tab-talk" class="view">
       <div id="talk-setup" class="setup">
@@ -78,7 +106,7 @@
       <div id="talk-live" class="live hidden">
         <h1 id="live-language" class="live-language"></h1>
         <div class="stage">
-          <div id="orb" class="orb" aria-hidden="true"></div>
+          <canvas id="orb" class="orb" aria-hidden="true"></canvas>
           <p id="orb-state" class="orb-state">Ready</p>
         </div>
 
@@ -236,6 +264,6 @@
         '<a href="http://localhost:8000">http://localhost:8000</a>.</p></div>';
     }
   </script>
-  <script type="module" src="generated/app.js?v=2e1846e2073a"></script>
+  <script type="module" src="generated/app.js?v=d4951ab495b7"></script>
 </body>
 </html>

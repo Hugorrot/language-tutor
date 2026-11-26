@@ -12,11 +12,11 @@ function Glyph({ type }) {
   };
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[type]}</svg>;
 }
-// Home goes back to the start screen (js/app.js listens to tutor:home); the others are tabs.
+// Every item is a tab with its own address (#home, #talk, ...).
 const SECTIONS = [['home', 'nav_home'], ['talk', 'nav_talk'], ['review', 'nav_review'], ['progress', 'nav_progress'], ['profile', 'nav_profile']];
 export default function Navigation() {
   useUiLanguage();
-  const [active, setActive] = useState(location.hash.slice(1) || 'talk');
+  const [active, setActive] = useState(location.hash.slice(1) || 'home');
   const [due, setDue] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const touchTimer = useRef(null);
@@ -24,7 +24,7 @@ export default function Navigation() {
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const ref = useRef(null);
   useEffect(() => {
-    const route = () => setActive(location.hash.slice(1) || 'talk');
+    const route = () => setActive(location.hash.slice(1) || 'home');
     const badge = e => setDue(e.detail);
     const media = matchMedia('(prefers-reduced-motion: reduce)');
     const motion = () => setReduced(media.matches);
@@ -45,7 +45,7 @@ export default function Navigation() {
     label: t(labelKey), icon: <span className="nav-glyph"><Glyph type={key} /><span>{t(labelKey)}</span></span>,
     active: active === key, badge: key === 'review' && due > 0 ? due : undefined,
     className: active === key ? 'is-current' : '',
-    onClick: () => { if (key === 'home') window.dispatchEvent(new CustomEvent('tutor:home')); else location.hash = key; },
+    onClick: () => { location.hash = key; },
   }));
   return <nav ref={ref} className="site-dock-slot" data-expanded={expanded || undefined}
       aria-label="Learning sections" onPointerDownCapture={touchReveal}

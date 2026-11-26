@@ -35,10 +35,11 @@ createRoot(document.getElementById('scanner-background')).render(<Scanner
   mouseInteraction={false} clickEffect="none" dpr={1.25} />);
 createRoot(document.getElementById('cursor-effects')).render(<CursorEffect />);
 createRoot(document.getElementById('navigation-root')).render(<Navigation />);
-// Animated page headings. data-split-text holds the translation key (js/i18n.js).
+// Animated page headings. data-split-text holds the translation key (js/i18n.js),
+// data-split-vars its values as JSON (e.g. the learner's name on Home).
 const headingRoots = new Map();
 function renderHeading(heading, root) {
-  const text = t(heading.dataset.splitText);
+  const text = t(heading.dataset.splitText, JSON.parse(heading.dataset.splitVars || '{}'));
   root.render(<SplitText key={text} text={text} tag="span" effect="rise" splitType="words"
     delay={85} duration={0.85} trigger="view" rootMargin="0px" textAlign="inherit" hoverEffect="none" />);
 }
@@ -59,6 +60,11 @@ function renderLoop() {
     separator="" color="#bad7cc" edgeFade={0.22} interactive pauseOnHover />);
 }
 renderLoop();
+// js/home.js changed a heading's key or values
+window.addEventListener('tutor:heading', e => {
+  const root = headingRoots.get(e.detail);
+  if (root) renderHeading(e.detail, root);
+});
 window.addEventListener('tutor:ui-language', () => {
   headingRoots.forEach((root, heading) => renderHeading(heading, root));
   renderLoop();

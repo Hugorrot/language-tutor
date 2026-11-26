@@ -99,7 +99,7 @@ export function createOrb(canvas, readLevels = () => null, { particles, hud = tr
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     const cx = w / 2, cy = h / 2;
-    const R = Math.min(w, h) * (hud ? 0.27 : 0.33);
+    const R = Math.min(w, h) * (hud ? 0.25 : 0.33);   // leave room for the rings and the dust halo
 
     // Core glow
     ctx.globalCompositeOperation = "lighter";

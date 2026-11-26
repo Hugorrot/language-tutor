@@ -92,6 +92,11 @@ const STRINGS = {
     new_profile: "Create a new profile", langs_practised: "Languages practised", none_yet: "none yet",
     t_switched: "Profile switched", t_switched_d: "Welcome back, {name}.", new_profile_eyebrow: "New profile",
     t_profile_fail: "Could not save the profile",
+    // Home
+    onb_welcome: "Welcome.", home_welcome: "Welcome, {name}.", home_welcome_back: "Welcome back, {name}.",
+    home_learning: "You're learning {lang} · level {level}", home_talk: "Start a conversation in {lang}", home_due_one: "{n} card ready to review",
+    home_due_other: "{n} cards ready to review", home_due_none: "Nothing to review right now", home_focus: "To work on",
+    home_focus_none: "No recurring mistakes yet: have a conversation first.", home_times: "{n}× · {s}",
   },
 
   Italian: {
@@ -163,6 +168,11 @@ const STRINGS = {
     new_profile: "Crea un nuovo profilo", langs_practised: "Lingue praticate", none_yet: "ancora nessuna",
     t_switched: "Profilo cambiato", t_switched_d: "Bentornato, {name}.", new_profile_eyebrow: "Nuovo profilo",
     t_profile_fail: "Impossibile salvare il profilo",
+    // Home
+    onb_welcome: "Benvenuto.", home_welcome: "Benvenuto, {name}.", home_welcome_back: "Bentornato, {name}.",
+    home_learning: "Stai imparando {lang} · livello {level}", home_talk: "Inizia una conversazione in {lang}", home_due_one: "{n} carta da ripassare",
+    home_due_other: "{n} carte da ripassare", home_due_none: "Niente da ripassare per ora", home_focus: "Da sistemare",
+    home_focus_none: "Ancora nessun errore ricorrente: fai prima una conversazione.", home_times: "{n}× · {s}",
   },
 
   Spanish: {
@@ -234,6 +244,11 @@ const STRINGS = {
     new_profile: "Crear un perfil nuevo", langs_practised: "Idiomas practicados", none_yet: "ninguno todavía",
     t_switched: "Perfil cambiado", t_switched_d: "Bienvenido de nuevo, {name}.", new_profile_eyebrow: "Perfil nuevo",
     t_profile_fail: "No se pudo guardar el perfil",
+    // Home
+    onb_welcome: "Bienvenido.", home_welcome: "Bienvenido, {name}.", home_welcome_back: "Bienvenido de nuevo, {name}.",
+    home_learning: "Estás aprendiendo {lang} · nivel {level}", home_talk: "Empieza una conversación en {lang}", home_due_one: "{n} tarjeta para repasar",
+    home_due_other: "{n} tarjetas para repasar", home_due_none: "Nada que repasar por ahora", home_focus: "Por mejorar",
+    home_focus_none: "Aún no hay errores repetidos: primero ten una conversación.", home_times: "{n}× · {s}",
   },
 
   French: {
@@ -305,6 +320,11 @@ const STRINGS = {
     new_profile: "Créer un nouveau profil", langs_practised: "Langues pratiquées", none_yet: "aucune pour l'instant",
     t_switched: "Profil changé", t_switched_d: "Bon retour, {name}.", new_profile_eyebrow: "Nouveau profil",
     t_profile_fail: "Impossible d'enregistrer le profil",
+    // Home
+    onb_welcome: "Bienvenue.", home_welcome: "Bienvenue, {name}.", home_welcome_back: "Bon retour, {name}.",
+    home_learning: "Langue étudiée : {lang} · niveau {level}", home_talk: "Commence une conversation en {lang}", home_due_one: "{n} carte à réviser",
+    home_due_other: "{n} cartes à réviser", home_due_none: "Rien à réviser pour l'instant", home_focus: "À travailler",
+    home_focus_none: "Pas encore d'erreur récurrente : commence par une conversation.", home_times: "{n}× · {s}",
   },
 
   German: {
@@ -376,6 +396,11 @@ const STRINGS = {
     new_profile: "Neues Profil erstellen", langs_practised: "Geübte Sprachen", none_yet: "noch keine",
     t_switched: "Profil gewechselt", t_switched_d: "Willkommen zurück, {name}.", new_profile_eyebrow: "Neues Profil",
     t_profile_fail: "Profil konnte nicht gespeichert werden",
+    // Home
+    onb_welcome: "Willkommen.", home_welcome: "Willkommen, {name}.", home_welcome_back: "Willkommen zurück, {name}.",
+    home_learning: "Du lernst {lang} · Niveau {level}", home_talk: "Starte ein Gespräch auf {lang}", home_due_one: "{n} Karte zum Wiederholen",
+    home_due_other: "{n} Karten zum Wiederholen", home_due_none: "Gerade nichts zu wiederholen", home_focus: "Daran arbeiten",
+    home_focus_none: "Noch keine wiederkehrenden Fehler: führ zuerst ein Gespräch.", home_times: "{n}× · {s}",
   },
 
   Portuguese: {
@@ -447,6 +472,11 @@ const STRINGS = {
     new_profile: "Criar um novo perfil", langs_practised: "Idiomas praticados", none_yet: "nenhum ainda",
     t_switched: "Perfil trocado", t_switched_d: "Bem-vindo de volta, {name}.", new_profile_eyebrow: "Novo perfil",
     t_profile_fail: "Não foi possível salvar o perfil",
+    // Home
+    onb_welcome: "Bem-vindo.", home_welcome: "Bem-vindo, {name}.", home_welcome_back: "Bem-vindo de volta, {name}.",
+    home_learning: "Você está aprendendo {lang} · nível {level}", home_talk: "Comece uma conversa em {lang}", home_due_one: "{n} cartão para revisar",
+    home_due_other: "{n} cartões para revisar", home_due_none: "Nada para revisar agora", home_focus: "Para melhorar",
+    home_focus_none: "Ainda não há erros recorrentes: faça uma conversa primeiro.", home_times: "{n}× · {s}",
   },
 };
 

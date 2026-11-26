@@ -365,3 +365,26 @@ select[hidden] { display: none !important; }
 .context mark, .occ-said mark { color: #f0c6af; text-decoration-color: #e8a6a6; }
 #tab-profile { max-width: 850px; margin: 0 auto; }
 @media (max-width:600px) { .site-dock-slot .dock-face .nav-glyph > span { font-size: 12px; } }
+
+/* Home: greeting and three shortcuts */
+.home { max-width: 980px; margin: 0 auto; padding-top: 4vh; }
+.home .eyebrow { font-size: 14px; color: var(--muted); text-transform: capitalize; margin: 0; }
+.home .title { font-size: clamp(54px, 7vw, 96px); margin: 14px 0 12px; }
+#home-sub { font-size: 16px; margin: 0 0 52px; }
+.home-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.home-card {
+  position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 170px; padding: 24px 24px 22px;
+  border: 1px solid var(--line); border-radius: 5px; background: #15363acc; color: var(--ink); text-decoration: none;
+  transition: border-color .2s, background .2s, transform .2s;
+}
+.home-card:hover { border-color: var(--accent); background: #1b4044; transform: translateY(-2px); }
+.home-card-label { font-size: 13px; color: var(--muted); letter-spacing: .02em; }
+.home-card strong { font-family: 'Instrument Serif', Georgia, serif; font-size: 27px; font-weight: 400; line-height: 1.2; }
+.home-card-meta { margin-top: auto; font-size: 13px; color: var(--accent-2); }
+.home-card-arrow { position: absolute; top: 20px; right: 22px; color: var(--muted); font-size: 18px; }
+.home-card:hover .home-card-arrow { color: var(--accent-2); }
+@media (max-width: 760px) {
+  .home-cards { grid-template-columns: 1fr; }
+  .home-card { min-height: 0; }
+  .home .title { font-size: 50px; }
+}

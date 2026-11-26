@@ -58,7 +58,7 @@ function VoiceControl({ onStart, onStop }) {
   useEffect(() => {
     const update = e => setState(e.detail);
     const view = e => setInSession(e.detail === 'talk-live');
-    const route = e => { if (typeof e.detail === 'string' && ['talk','review','progress','profile','onboarding'].includes(e.detail)) setOnTalk(e.detail === 'talk'); };
+    const route = e => { if (typeof e.detail === 'string' && ['home','talk','review','progress','profile','onboarding'].includes(e.detail)) setOnTalk(e.detail === 'talk'); };
     window.addEventListener('tutor:voice-state', update);
     window.addEventListener('tutor:conversation', view);
     window.addEventListener('tutor:view', route);

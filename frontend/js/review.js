@@ -5,7 +5,7 @@
 import { notify } from "./preferences.js";
 import { api } from "./api.js";
 import { playBase64 } from "./audio.js";
-import { getLanguage, getLearnerId, refreshDueBadge } from "./app.js";
+import { getLanguage, getLearnerId, refreshDueBadge, setLanguage } from "./app.js";
 import { renderChips } from "./ui.js";
 import { langName, onUiLanguageChange, t } from "./i18n.js";
 
@@ -149,7 +149,7 @@ export async function loadReview(choice = null) {
     language = choice || (langs.includes(getLanguage()) || !langs.length ? getLanguage() : langs[0]);
     // One chip per language that has cards due, with how many.
     const items = langs.map((l) => ({ value: l, label: langName(l), badge: all.due_by_language[l] }));
-    renderChips($("review-languages"), langs.length > 1 ? items : [], language, (v) => loadReview(v));
+    renderChips($("review-languages"), langs.length > 1 ? items : [], language, (v) => { setLanguage(v); loadReview(v); });
     queue = langs.length > 1 ? (await api.dueCards(getLearnerId(), language)).cards : all.cards;
   } catch (e) {
     console.error(e);

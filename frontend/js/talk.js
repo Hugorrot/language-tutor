@@ -3,7 +3,7 @@ import { api } from "./api.js";
 import { playBase64, readLevels, startRecording, stopPlayback, stopRecording, unlockAudio } from "./audio.js";
 import { getExplanationLanguage, getLanguage, getLearner, getLearnerId, refreshDueBadge, setExplanationLanguage,
          setLanguage } from "./app.js";
-import { createOrb } from "../src/orbBridge.jsx";
+import { createOrb } from "./orb.js";        // sphere of glowing particles on a <canvas>
 import { mountSessionWidgets, renderSummaryCards } from "../src/widgets.jsx";
 import { getAudioPreferences, notify } from "./preferences.js";
 import { confirmDialog, renderChips } from "./ui.js";
@@ -24,7 +24,8 @@ export function renderLanguagePicker(keepSelection = false) {
   const learner = getLearner();
   if (!keepSelection || !language) language = getLanguage();
   const langs = learner?.supported_languages || ALL_LANGUAGES;
-  renderChips($("language-picker"), langs.map((l) => ({ value: l, label: langName(l) })), language, (v) => { language = v; });
+  renderChips($("language-picker"), langs.map((l) => ({ value: l, label: langName(l) })), language,
+    (v) => { language = v; setLanguage(v); });       // the other sections follow this choice
 
   // Explanation language: the interface, summaries, grammar rules and card explanations use it.
   renderChips($("explanation-picker"), langs.map((l) => ({ value: l, label: langName(l) })), getExplanationLanguage(),
@@ -232,9 +233,9 @@ function renderSummary({ summary, errors, cards }) {
   renderSummaryCards(cards, refreshDueBadge);
 }
 
-// Back to the start screen ("Your next conversation"), from the Home button in the dock.
+// Close the Talk tab back to its start screen ("Your next conversation"), e.g. before switching profile.
 // In the middle of a conversation, ask first: leaving drops the session without analysing it.
-export async function goHome() {
+export async function leaveConversation() {
   const live = !$("talk-live").classList.contains("hidden") && sessionId;
   if (live && !(await confirmDialog({ title: t("leave_title"), body: t("leave_body"),
                                       ok: t("btn_leave"), cancel: t("btn_cancel") }))) return false;
