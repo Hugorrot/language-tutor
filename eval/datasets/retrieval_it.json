@@ -1,0 +1,335 @@
+{
+ "description": "Memories of one fictional learner (4 past sessions) and queries labelled with the relevant memories. Queries with an empty 'relevant' list have no related memory.",
+ "memories": [
+  {
+   "id": "m1",
+   "session_id": 1,
+   "text": "Ho un cane che si chiama Rocco, è molto simpatico"
+  },
+  {
+   "id": "m2",
+   "session_id": 1,
+   "text": "Sabato sono andata al cinema con mia amica Giulia"
+  },
+  {
+   "id": "m3",
+   "session_id": 1,
+   "text": "Abbiamo visto un film di fantascienza, era troppo lungo"
+  },
+  {
+   "id": "m4",
+   "session_id": 1,
+   "text": "Domenica ho cucinato la lasagna per la mia famiglia"
+  },
+  {
+   "id": "m5",
+   "session_id": 1,
+   "text": "Mia madre fa la lasagna più buona del mondo"
+  },
+  {
+   "id": "m6",
+   "session_id": 1,
+   "text": "Il weekend prossimo voglio andare al mare"
+  },
+  {
+   "id": "m7",
+   "session_id": 2,
+   "text": "Sono vegetariana, non mangio la carne"
+  },
+  {
+   "id": "m8",
+   "session_id": 2,
+   "text": "Vorrei prenotare una tavola per quattro persone"
+  },
+  {
+   "id": "m9",
+   "session_id": 2,
+   "text": "Sono allergica alle noci"
+  },
+  {
+   "id": "m10",
+   "session_id": 2,
+   "text": "Per me un'acqua frizzante, grazie"
+  },
+  {
+   "id": "m11",
+   "session_id": 2,
+   "text": "Il tiramisù è il mio dolce preferito"
+  },
+  {
+   "id": "m12",
+   "session_id": 2,
+   "text": "Lavoro in una panetteria, comincio alle cinque di mattina"
+  },
+  {
+   "id": "m13",
+   "session_id": 3,
+   "text": "Cerco un appartamento vicino all'università di Bologna"
+  },
+  {
+   "id": "m14",
+   "session_id": 3,
+   "text": "Faccio l'Erasmus a Bologna da settembre"
+  },
+  {
+   "id": "m15",
+   "session_id": 3,
+   "text": "Il mio budget è quattrocento euro al mese"
+  },
+  {
+   "id": "m16",
+   "session_id": 3,
+   "text": "Voglio una camera con balcone perché ho molte piante"
+  },
+  {
+   "id": "m17",
+   "session_id": 3,
+   "text": "Non posso vivere con gatti, sono allergica"
+  },
+  {
+   "id": "m18",
+   "session_id": 3,
+   "text": "Il mio coinquilino fa troppo rumore la notte"
+  },
+  {
+   "id": "m19",
+   "session_id": 4,
+   "text": "Studio ingegneria, è molto difficile"
+  },
+  {
+   "id": "m20",
+   "session_id": 4,
+   "text": "Ho un esame di matematica la settimana prossima"
+  },
+  {
+   "id": "m21",
+   "session_id": 4,
+   "text": "Mia sorella Anna viene a trovarmi a dicembre"
+  },
+  {
+   "id": "m22",
+   "session_id": 4,
+   "text": "Gioco a pallavolo il martedì e il giovedì"
+  },
+  {
+   "id": "m23",
+   "session_id": 4,
+   "text": "Mi piace correre nel parco la mattina presto"
+  },
+  {
+   "id": "m24",
+   "session_id": 4,
+   "text": "Sono spagnola, di Valencia"
+  },
+  {
+   "id": "m25",
+   "session_id": 4,
+   "text": "A Valencia mangiamo la paella ogni domenica"
+  },
+  {
+   "id": "m26",
+   "session_id": 4,
+   "text": "Non mi piace il freddo, a Bologna fa freddo in inverno"
+  },
+  {
+   "id": "m27",
+   "session_id": 4,
+   "text": "Voglio imparare a fare la pasta fresca"
+  },
+  {
+   "id": "m28",
+   "session_id": 4,
+   "text": "Il mio treno per Firenze è stato in ritardo due ore"
+  }
+ ],
+ "queries": [
+  {
+   "id": "q1",
+   "query": "Oggi ho portato il mio cane a fare una passeggiata",
+   "relevant": [
+    "m1"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q2",
+   "query": "ordering at a restaurant",
+   "relevant": [
+    "m7",
+    "m8",
+    "m9",
+    "m10",
+    "m11"
+   ],
+   "type": "scenario"
+  },
+  {
+   "id": "q3",
+   "query": "Cosa posso mangiare? Non voglio la carne",
+   "relevant": [
+    "m7"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q4",
+   "query": "Vorrei un dolce alla fine della cena",
+   "relevant": [
+    "m11"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q5",
+   "query": "renting a flat",
+   "relevant": [
+    "m13",
+    "m15",
+    "m16",
+    "m17",
+    "m18"
+   ],
+   "type": "scenario"
+  },
+  {
+   "id": "q6",
+   "query": "Quanto costa l'affitto della stanza?",
+   "relevant": [
+    "m15"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q7",
+   "query": "Ieri ho visto Giulia in centro",
+   "relevant": [
+    "m2"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q8",
+   "query": "Questo weekend arriva mia sorella",
+   "relevant": [
+    "m21"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q9",
+   "query": "Sono stanca, mi sono svegliata alle quattro per il lavoro",
+   "relevant": [
+    "m12"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q10",
+   "query": "Devo studiare tanto per l'università",
+   "relevant": [
+    "m19",
+    "m20"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q11",
+   "query": "Ieri ho fatto sport con i miei amici",
+   "relevant": [
+    "m22",
+    "m23"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q12",
+   "query": "Oggi nevica e fa molto freddo",
+   "relevant": [
+    "m26"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q13",
+   "query": "telling a friend about your weekend",
+   "relevant": [
+    "m2",
+    "m3",
+    "m4",
+    "m6"
+   ],
+   "type": "scenario"
+  },
+  {
+   "id": "q14",
+   "query": "Mi manca la cucina del mio paese",
+   "relevant": [
+    "m24",
+    "m25"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q15",
+   "query": "Ho fatto un corso di cucina italiana",
+   "relevant": [
+    "m27"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q16",
+   "query": "Domani prendo il treno per andare a Firenze",
+   "relevant": [
+    "m28"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q17",
+   "query": "Ho comprato una nuova pianta per la mia camera",
+   "relevant": [
+    "m16"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q18",
+   "query": "Il mio vicino ascolta musica alta di notte",
+   "relevant": [
+    "m18"
+   ],
+   "type": "message"
+  },
+  {
+   "id": "q19",
+   "query": "Mi piace molto suonare la chitarra",
+   "relevant": [],
+   "type": "message"
+  },
+  {
+   "id": "q20",
+   "query": "Ho comprato una macchina nuova",
+   "relevant": [],
+   "type": "message"
+  },
+  {
+   "id": "q21",
+   "query": "Il mio colore preferito è il blu",
+   "relevant": [],
+   "type": "message"
+  },
+  {
+   "id": "q22",
+   "query": "Domani vado dal dentista",
+   "relevant": [],
+   "type": "message"
+  },
+  {
+   "id": "q23",
+   "query": "Ho letto un libro di storia medievale",
+   "relevant": [],
+   "type": "message"
+  }
+ ]
+}

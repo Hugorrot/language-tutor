@@ -1,7 +1,16 @@
+# Python API runtime. Frontend packages are in frontend/package.json and package-lock.json.
+# Install the UI separately with npm ci, then npm run build, from frontend/.
+
+# HTTP API and upload handling
 fastapi>=0.115
 uvicorn[standard]>=0.30
 python-multipart>=0.0.9
+
+# Tutor, configuration, and data validation
 openai>=1.50
 python-dotenv>=1.0
 pydantic>=2.7
+
+# Spaced repetition and vector memory
 fsrs>=5.0
+chromadb>=1.0

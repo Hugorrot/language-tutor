@@ -12,6 +12,8 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from data import db  # noqa: E402
 
+# "memory" = vector DB retrieval for the turn (embedding + search). Older turns don't have it (counted as 0).
+
 
 def p90(values: list[int]) -> float:
     s = sorted(values)
@@ -26,7 +28,7 @@ def main() -> None:
         print("No timed turns yet. Have a few voice conversations first.")
         return
     print(f"turns={len(timings)}")
-    for key in ("asr", "llm", "tts", "total"):
+    for key in ("asr", "memory", "llm", "tts", "total"):
         vals = [t.get(key, 0) for t in timings]
         print(f"{key:>5}: mean={statistics.mean(vals):7.0f} ms   p90={p90(vals):7.0f} ms")
 

@@ -1,0 +1,96 @@
+{
+ "description": "Simulated learners for eval/simulate.py. 'mistakes' is the ground truth: each learner makes exactly these recurring mistakes.",
+ "learners": [
+  {
+   "name": "Lucía",
+   "level": "A2",
+   "native_language": "Spanish",
+   "goal": "Erasmus",
+   "facts": [
+    "She is from Valencia, Spain, and is doing an Erasmus year in Bologna",
+    "She studies engineering",
+    "She has a dog called Rocco",
+    "She is vegetarian and allergic to nuts",
+    "Her sister Anna is visiting her in December",
+    "She plays volleyball on Tuesdays"
+   ],
+   "mistakes": [
+    {
+     "key": "possessive_article",
+     "description": "Leaves out the article before possessives with non-family nouns: says 'mia amica', 'mio libro' instead of 'la mia amica', 'il mio libro'."
+    },
+    {
+     "key": "aux_essere_motion",
+     "description": "Uses avere instead of essere with verbs of motion in the passato prossimo: 'ho andato', 'ho uscito', 'ho tornato'."
+    },
+    {
+     "key": "age_avere",
+     "description": "Uses essere for age: 'sono 22 anni' instead of 'ho 22 anni'."
+    },
+    {
+     "key": "tavola_tavolo",
+     "description": "Says 'una tavola' when she means a restaurant table ('un tavolo')."
+    }
+   ]
+  },
+  {
+   "name": "Tom",
+   "level": "A2",
+   "native_language": "English",
+   "goal": "work",
+   "facts": [
+    "He is from Manchester and moved to Milan for work",
+    "He works remotely as a web developer",
+    "He has a cat called Biscuit",
+    "He goes running in Parco Sempione",
+    "He is learning to cook risotto",
+    "His parents are visiting him at Easter"
+   ],
+   "mistakes": [
+    {
+     "key": "adj_agreement",
+     "description": "Does not make adjectives agree with feminine or plural nouns: 'una casa bello', 'i libri interessante'."
+    },
+    {
+     "key": "prep_cities",
+     "description": "Uses 'in' with cities: 'vado in Roma', 'abito in Milano' instead of 'a Roma', 'a Milano'."
+    },
+    {
+     "key": "ce_ci_sono",
+     "description": "Uses 'c'è' with plural nouns: 'c'è molti negozi' instead of 'ci sono molti negozi'."
+    },
+    {
+     "key": "libreria_biblioteca",
+     "description": "Says 'libreria' when he means library ('biblioteca')."
+    }
+   ]
+  },
+  {
+   "name": "Ana",
+   "level": "B1",
+   "native_language": "Portuguese",
+   "goal": "living in Italy",
+   "facts": [
+    "She is a nurse from Porto who now works in a hospital in Turin",
+    "She has two children, Pedro and Sofia",
+    "She sings in a choir",
+    "She spent every childhood summer at her grandparents' farm",
+    "She wants to buy a flat with a garden"
+   ],
+   "mistakes": [
+    {
+     "key": "imperfetto_habits",
+     "description": "Uses the passato prossimo for past habits: 'da piccola sono andata sempre al mare' instead of 'andavo'."
+    },
+    {
+     "key": "participle_agreement",
+     "description": "Forgets participle agreement with essere: 'le ragazze sono arrivato', 'Maria è andato'."
+    },
+    {
+     "key": "molto_agreement",
+     "description": "Does not make 'molto' agree when it means 'many': 'molto persone', 'molto cose'."
+    }
+   ]
+  }
+ ]
+}

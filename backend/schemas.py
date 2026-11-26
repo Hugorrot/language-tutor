@@ -35,9 +35,17 @@ class LearnerCreate(BaseModel):
     goal: str = ""
 
 
+class LearnerUpdate(BaseModel):
+    """Only the fields that are sent are changed."""
+    name: Optional[str] = None
+    explanation_language: Optional[str] = None
+    goal: Optional[str] = None
+
+
 class SessionStart(BaseModel):
     learner_id: int
     scenario: str = "free conversation"
+    target_language: Optional[str] = None   # None = the language of the learner's last session
 
 
 class SessionEnd(BaseModel):

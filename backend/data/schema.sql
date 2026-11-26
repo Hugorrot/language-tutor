@@ -3,10 +3,10 @@
 CREATE TABLE IF NOT EXISTS learners (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     name                 TEXT NOT NULL,
-    target_language      TEXT NOT NULL DEFAULT 'Italian',
+    target_language      TEXT NOT NULL DEFAULT 'Italian',   -- language of the most recent session
     explanation_language TEXT NOT NULL DEFAULT 'English',
     goal                 TEXT DEFAULT '',
-    level                TEXT DEFAULT 'A2',           -- CEFR estimate
+    level                TEXT DEFAULT 'A2',           -- default for a new language; see learner_levels
     created_at           TEXT DEFAULT (datetime('now'))
 );
 
@@ -14,7 +14,10 @@ CREATE TABLE IF NOT EXISTS sessions (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     learner_id  INTEGER NOT NULL REFERENCES learners(id),
     scenario    TEXT DEFAULT '',
+    language    TEXT,                                  -- target language of this session
     targets     TEXT DEFAULT '[]',                     -- JSON list chosen by the planner
+    target_concepts TEXT DEFAULT '[]',                 -- JSON list of concept ids behind the targets
+    memory      TEXT DEFAULT '',                       -- memories retrieved at session start (prompt text)
     summary     TEXT,
     started_at  TEXT DEFAULT (datetime('now')),
     ended_at    TEXT
@@ -34,11 +37,13 @@ CREATE TABLE IF NOT EXISTS errors (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id   INTEGER NOT NULL REFERENCES sessions(id),
     learner_id   INTEGER NOT NULL REFERENCES learners(id),
+    language     TEXT,                                 -- same as the session's language
     type         TEXT NOT NULL,
     original     TEXT NOT NULL,
     correction   TEXT NOT NULL,
     rule         TEXT NOT NULL,
     target_word  TEXT,
+    concept_id   INTEGER,                              -- same id = same recurring mistake (memory/concepts.py)
     fixed        INTEGER DEFAULT 0,                    -- 1 once the learner gets it right later
     created_at   TEXT DEFAULT (datetime('now'))
 );
@@ -47,6 +52,7 @@ CREATE TABLE IF NOT EXISTS cards (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     learner_id   INTEGER NOT NULL REFERENCES learners(id),
     error_id     INTEGER REFERENCES errors(id),
+    language     TEXT,                                 -- target language the card practises
     kind         TEXT NOT NULL CHECK (kind IN ('cloze', 'vocab', 'reverse')),
     front        TEXT NOT NULL,
     back         TEXT NOT NULL,
@@ -58,6 +64,14 @@ CREATE TABLE IF NOT EXISTS cards (
     created_at   TEXT DEFAULT (datetime('now'))
 );
 
+-- CEFR level per language (a learner can practise several languages)
+CREATE TABLE IF NOT EXISTS learner_levels (
+    learner_id  INTEGER NOT NULL REFERENCES learners(id),
+    language    TEXT NOT NULL,
+    level       TEXT NOT NULL DEFAULT 'A2',
+    PRIMARY KEY (learner_id, language)
+);
+
 CREATE TABLE IF NOT EXISTS reviews (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     card_id      INTEGER NOT NULL REFERENCES cards(id),
@@ -67,3 +81,4 @@ CREATE TABLE IF NOT EXISTS reviews (
 
 CREATE INDEX IF NOT EXISTS idx_cards_due ON cards(learner_id, due);
 CREATE INDEX IF NOT EXISTS idx_errors_learner ON errors(learner_id);
+CREATE INDEX IF NOT EXISTS idx_errors_concept ON errors(learner_id, concept_id);
