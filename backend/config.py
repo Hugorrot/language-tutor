@@ -9,6 +9,11 @@ load_dotenv(BASE_DIR / ".env")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
+# Offline mode: FAKE_LLM=1 replaces every OpenAI call with canned, rule-based answers
+# (tutor/fake_llm.py). No key needed and no cost: it tests the plumbing, not the tutor's quality.
+# It uses its own database and vector DB in data/fake/, so fake data never mixes with real data.
+FAKE_LLM = os.getenv("FAKE_LLM", "0").strip().lower() in ("1", "true", "yes")
+
 # Models. Verify the current names in the OpenAI docs on day 1:
 # audio model names change often, and some are scheduled for retirement.
 LLM_MODEL = os.getenv("LLM_MODEL", "gpt-6-luna")          # tutor, error extraction, cards
@@ -54,7 +59,9 @@ MIN_TURNS_FOR_FIXED = 4          # a session needs this many learner turns befor
 RETRIEVE_EACH_TURN = True        # also retrieve with the learner's latest message (costs ~1 embedding call per turn)
 
 # Paths
-DB_PATH = BASE_DIR / "data" / "tutor.db"
-CHROMA_DIR = BASE_DIR / "data" / "chroma"
+DATA_DIR = BASE_DIR / "data" / "fake" if FAKE_LLM else BASE_DIR / "data"
+DB_PATH = DATA_DIR / "tutor.db"
+CHROMA_DIR = DATA_DIR / "chroma"
+AUDIO_CACHE_DIR = DATA_DIR / "audio_cache"
 PROMPTS_DIR = BASE_DIR / "prompts"
 FRONTEND_DIR = BASE_DIR.parent / "frontend"

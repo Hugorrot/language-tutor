@@ -1,3 +1,101 @@
 {"id": 1, "learner_text": "Ieri io sono andato al cinema con mia amica.", "level": "A2", "errors": [{"original": "con mia amica", "correction": "con la mia amica", "type": "grammar"}]}
 {"id": 2, "learner_text": "Vorrei prenotare una tavola per due persone.", "level": "A2", "errors": [{"original": "una tavola", "correction": "un tavolo", "type": "vocabulary"}]}
 {"id": 3, "learner_text": "Mi piace molto la pizza e la pasta.", "level": "A2", "errors": []}
+{"id": 4, "learner_text": "Io ho venti anni e abito a Milano.", "level": "A1", "errors": []}
+{"id": 5, "learner_text": "Mia madre lavora in un ospedale.", "level": "A1", "errors": []}
+{"id": 6, "learner_text": "Sabato siamo andati a mangiare in una trattoria.", "level": "A2", "errors": []}
+{"id": 7, "learner_text": "Il problema è che non ho tempo.", "level": "A2", "errors": []}
+{"id": 8, "learner_text": "Le ragazze sono molto simpatiche.", "level": "A1", "errors": []}
+{"id": 9, "learner_text": "Mi piacciono molto gli animali.", "level": "A2", "errors": []}
+{"id": 10, "learner_text": "Sono arrivato in Italia due anni fa.", "level": "A2", "errors": []}
+{"id": 11, "learner_text": "Ieri, mentre camminavo, ho incontrato un amico.", "level": "B1", "errors": []}
+{"id": 12, "learner_text": "Se avessi più soldi, comprerei una macchina nuova.", "level": "B1", "errors": []}
+{"id": 13, "learner_text": "Ho incontrato Marco e gli ho dato il libro.", "level": "A2", "errors": []}
+{"id": 14, "learner_text": "Ci sono molti turisti in centro.", "level": "A2", "errors": []}
+{"id": 15, "learner_text": "Vorrei un'acqua naturale, per favore.", "level": "A1", "errors": []}
+{"id": 16, "learner_text": "Gli studenti sono in classe.", "level": "A1", "errors": []}
+{"id": 17, "learner_text": "Ho fatto una foto del mare, è bellissima.", "level": "A2", "errors": []}
+{"id": 18, "learner_text": "Mia madre è molto sensibile, ma anche molto pratica.", "level": "A2", "errors": []}
+{"id": 19, "learner_text": "Lavoro qui da tre anni e mi trovo bene.", "level": "A2", "errors": []}
+{"id": 20, "learner_text": "Ho dovuto andare dal medico perché stavo male.", "level": "B1", "errors": []}
+{"id": 21, "learner_text": "Paolo e sua moglie sono venuti a cena da noi.", "level": "A2", "errors": []}
+{"id": 22, "learner_text": "Se fossi in te, parlerei con lui.", "level": "B1", "errors": []}
+{"id": 23, "learner_text": "La mia sorella si chiama Giulia.", "level": "A1", "errors": [{"original": "La mia sorella", "correction": "Mia sorella", "type": "grammar"}]}
+{"id": 24, "learner_text": "La problema principale è il traffico.", "level": "A2", "errors": [{"original": "La problema", "correction": "Il problema", "type": "grammar"}]}
+{"id": 25, "learner_text": "Io ho fame, voglio mangiare una panino.", "level": "A1", "errors": [{"original": "una panino", "correction": "un panino", "type": "grammar"}]}
+{"id": 26, "learner_text": "Ho un'amico che vive a Napoli.", "level": "A1", "errors": [{"original": "un'amico", "correction": "un amico", "type": "spelling"}]}
+{"id": 27, "learner_text": "Ho comprato un zaino nuovo.", "level": "A1", "errors": [{"original": "un zaino", "correction": "uno zaino", "type": "grammar"}]}
+{"id": 28, "learner_text": "I studenti hanno un esame domani.", "level": "A1", "errors": [{"original": "I studenti", "correction": "Gli studenti", "type": "grammar"}]}
+{"id": 29, "learner_text": "Giulia è uscita con suo ragazzo.", "level": "A2", "errors": [{"original": "con suo ragazzo", "correction": "con il suo ragazzo", "type": "grammar"}]}
+{"id": 30, "learner_text": "Il nostro professore è molto bravo, ma nostri compiti sono difficili.", "level": "A2", "errors": [{"original": "nostri compiti", "correction": "i nostri compiti", "type": "grammar"}]}
+{"id": 31, "learner_text": "Ieri sono uscito con miei colleghi.", "level": "A2", "errors": [{"original": "con miei colleghi", "correction": "con i miei colleghi", "type": "grammar"}]}
+{"id": 32, "learner_text": "Sto imparando l'italiano per parlare con la famiglia di mio ragazzo.", "level": "A2", "errors": [{"original": "di mio ragazzo", "correction": "del mio ragazzo", "type": "grammar"}]}
+{"id": 33, "learner_text": "Mi sono lavato i mani prima di mangiare.", "level": "A2", "errors": [{"original": "i mani", "correction": "le mani", "type": "grammar"}]}
+{"id": 34, "learner_text": "Mia fratello studia medicina.", "level": "A1", "errors": [{"original": "Mia fratello", "correction": "Mio fratello", "type": "grammar"}]}
+{"id": 35, "learner_text": "Ho tre fratello.", "level": "A1", "errors": [{"original": "tre fratello", "correction": "tre fratelli", "type": "grammar"}]}
+{"id": 36, "learner_text": "Lui ha una gatta nera e due cane.", "level": "A1", "errors": [{"original": "due cane", "correction": "due cani", "type": "grammar"}]}
+{"id": 37, "learner_text": "Le case sono molto bello.", "level": "A1", "errors": [{"original": "bello", "correction": "belle", "type": "grammar"}]}
+{"id": 38, "learner_text": "La mia amica è molto simpatico.", "level": "A2", "errors": [{"original": "simpatico", "correction": "simpatica", "type": "grammar"}]}
+{"id": 39, "learner_text": "Ho visto le foto che mi hai mandato, sono bellissimi.", "level": "A2", "errors": [{"original": "bellissimi", "correction": "bellissime", "type": "grammar"}]}
+{"id": 40, "learner_text": "Ho visto un film molto interessanto.", "level": "A2", "errors": [{"original": "interessanto", "correction": "interessante", "type": "grammar"}]}
+{"id": 41, "learner_text": "Ogni giorno bevo due tazze di caffè e mangio tre biscotto.", "level": "A2", "errors": [{"original": "tre biscotto", "correction": "tre biscotti", "type": "grammar"}]}
+{"id": 42, "learner_text": "Ho molto amici a Roma.", "level": "A2", "errors": [{"original": "molto amici", "correction": "molti amici", "type": "grammar"}]}
+{"id": 43, "learner_text": "Domani vado al mare se fa bello tempo.", "level": "A2", "errors": [{"original": "bello tempo", "correction": "bel tempo", "type": "grammar"}]}
+{"id": 44, "learner_text": "Ho un buono amico in Italia.", "level": "A2", "errors": [{"original": "buono amico", "correction": "buon amico", "type": "grammar"}]}
+{"id": 45, "learner_text": "Quanto costa questi pantaloni?", "level": "A2", "errors": [{"original": "costa", "correction": "costano", "type": "grammar"}]}
+{"id": 46, "learner_text": "C'è molte persone alla festa.", "level": "A2", "errors": [{"original": "C'è molte", "correction": "Ci sono molte", "type": "grammar"}]}
+{"id": 47, "learner_text": "Mi piace i libri di storia.", "level": "A2", "errors": [{"original": "piace", "correction": "piacciono", "type": "grammar"}]}
+{"id": 48, "learner_text": "Abito in Milano.", "level": "A1", "errors": [{"original": "in Milano", "correction": "a Milano", "type": "grammar"}]}
+{"id": 49, "learner_text": "Domani vado a la spiaggia.", "level": "A2", "errors": [{"original": "a la spiaggia", "correction": "alla spiaggia", "type": "grammar"}]}
+{"id": 50, "learner_text": "Mi sono svegliato a le sette.", "level": "A2", "errors": [{"original": "a le sette", "correction": "alle sette", "type": "grammar"}]}
+{"id": 51, "learner_text": "Ho conosciuto Paolo a l'università.", "level": "A2", "errors": [{"original": "a l'università", "correction": "all'università", "type": "grammar"}]}
+{"id": 52, "learner_text": "Vado da il dentista domani.", "level": "A2", "errors": [{"original": "da il dentista", "correction": "dal dentista", "type": "grammar"}]}
+{"id": 53, "learner_text": "Vado in vacanza a la montagna con la mia famiglia.", "level": "A2", "errors": [{"original": "a la montagna", "correction": "in montagna", "type": "grammar"}]}
+{"id": 54, "learner_text": "Il libro è sul tavolo, vicino del computer.", "level": "A2", "errors": [{"original": "vicino del computer", "correction": "vicino al computer", "type": "grammar"}]}
+{"id": 55, "learner_text": "Studio italiano da due anni fa.", "level": "A2", "errors": [{"original": "da due anni fa", "correction": "da due anni", "type": "grammar"}]}
+{"id": 56, "learner_text": "Aspetto per l'autobus da venti minuti.", "level": "A2", "errors": [{"original": "Aspetto per l'autobus", "correction": "Aspetto l'autobus", "type": "grammar"}]}
+{"id": 57, "learner_text": "Cerco per un appartamento vicino all'università.", "level": "A2", "errors": [{"original": "Cerco per un appartamento", "correction": "Cerco un appartamento", "type": "grammar"}]}
+{"id": 58, "learner_text": "Ho telefonato mia madre ieri sera.", "level": "A2", "errors": [{"original": "telefonato mia madre", "correction": "telefonato a mia madre", "type": "grammar"}]}
+{"id": 59, "learner_text": "Io sono venti anni.", "level": "A1", "errors": [{"original": "sono venti anni", "correction": "ho venti anni", "type": "grammar"}]}
+{"id": 60, "learner_text": "Ieri ho andato al supermercato.", "level": "A2", "errors": [{"original": "ho andato", "correction": "sono andato", "type": "grammar"}]}
+{"id": 61, "learner_text": "Maria è andato in Spagna l'anno scorso.", "level": "A2", "errors": [{"original": "è andato", "correction": "è andata", "type": "grammar"}]}
+{"id": 62, "learner_text": "Siamo andato in montagna sabato.", "level": "A2", "errors": [{"original": "Siamo andato", "correction": "Siamo andati", "type": "grammar"}]}
+{"id": 63, "learner_text": "Ieri Luca e Sara hanno uscito insieme.", "level": "A2", "errors": [{"original": "hanno uscito", "correction": "sono usciti", "type": "grammar"}]}
+{"id": 64, "learner_text": "Ieri pioveva e ho restato a casa.", "level": "B1", "errors": [{"original": "ho restato", "correction": "sono restato", "type": "grammar"}]}
+{"id": 65, "learner_text": "Ieri ho apriuto la finestra perché faceva caldo.", "level": "A2", "errors": [{"original": "apriuto", "correction": "aperto", "type": "grammar"}]}
+{"id": 66, "learner_text": "Abbiamo prenduto il treno delle otto.", "level": "A2", "errors": [{"original": "prenduto", "correction": "preso", "type": "grammar"}]}
+{"id": 67, "learner_text": "Ho scrito un messaggio a Luca.", "level": "A2", "errors": [{"original": "scrito", "correction": "scritto", "type": "spelling"}]}
+{"id": 68, "learner_text": "Quando sono stato bambino, giocavo a calcio ogni giorno.", "level": "B1", "errors": [{"original": "sono stato", "correction": "ero", "type": "grammar"}]}
+{"id": 69, "learner_text": "Penso che lui ha ragione.", "level": "B1", "errors": [{"original": "ha ragione", "correction": "abbia ragione", "type": "grammar"}]}
+{"id": 70, "learner_text": "Spero che tu stai bene.", "level": "B1", "errors": [{"original": "stai", "correction": "stia", "type": "grammar"}]}
+{"id": 71, "learner_text": "Se avrei tempo, verrei con voi.", "level": "B1", "errors": [{"original": "Se avrei", "correction": "Se avessi", "type": "grammar"}]}
+{"id": 72, "learner_text": "Gli italiani bevono molto caffè, credo che bevono tre caffè al giorno.", "level": "B1", "errors": [{"original": "che bevono", "correction": "che bevano", "type": "grammar"}]}
+{"id": 73, "learner_text": "Nonostante piove, usciamo lo stesso.", "level": "B2", "errors": [{"original": "piove", "correction": "piova", "type": "grammar"}]}
+{"id": 74, "learner_text": "Ho visto Giulia e gli ho detto la verità.", "level": "A2", "errors": [{"original": "gli ho detto", "correction": "le ho detto", "type": "grammar"}]}
+{"id": 75, "learner_text": "Ho comprato il pane, ma ho dimenticato di comprarlo il latte.", "level": "A2", "errors": [{"original": "comprarlo il latte", "correction": "comprare il latte", "type": "grammar"}]}
+{"id": 76, "learner_text": "Le parole nuove sono difficili da ricordarle.", "level": "A2", "errors": [{"original": "ricordarle", "correction": "ricordare", "type": "grammar"}]}
+{"id": 77, "learner_text": "Questa è la ragazza che ti ho parlato.", "level": "B1", "errors": [{"original": "che ti ho parlato", "correction": "di cui ti ho parlato", "type": "grammar"}]}
+{"id": 78, "learner_text": "Ho preso una foto della torre.", "level": "A2", "errors": [{"original": "preso una foto", "correction": "fatto una foto", "type": "vocabulary"}]}
+{"id": 79, "learner_text": "Devo fare una decisione importante.", "level": "A2", "errors": [{"original": "fare una decisione", "correction": "prendere una decisione", "type": "vocabulary"}]}
+{"id": 80, "learner_text": "La mia camera è molto largo e luminosa.", "level": "A2", "errors": [{"original": "largo", "correction": "grande", "type": "vocabulary"}]}
+{"id": 81, "learner_text": "Sono molto eccitato per il concerto di stasera.", "level": "B1", "errors": [{"original": "eccitato", "correction": "emozionato", "type": "vocabulary"}]}
+{"id": 82, "learner_text": "La libreria dell'università presta libri agli studenti.", "level": "B1", "errors": [{"original": "libreria", "correction": "biblioteca", "type": "vocabulary"}]}
+{"id": 83, "learner_text": "Attualmente non ho capito la domanda.", "level": "B1", "errors": [{"original": "Attualmente", "correction": "In realtà", "type": "vocabulary"}]}
+{"id": 84, "learner_text": "Ho domandato al professore una domanda.", "level": "A2", "errors": [{"original": "domandato", "correction": "fatto", "type": "vocabulary"}]}
+{"id": 85, "learner_text": "Ho realizzato che avevo perso il treno.", "level": "B1", "errors": [{"original": "realizzato", "correction": "capito", "type": "vocabulary"}]}
+{"id": 86, "learner_text": "Ho mangiato troppo, adesso mi fa male la panza.", "level": "A2", "errors": [{"original": "panza", "correction": "pancia", "type": "vocabulary"}]}
+{"id": 87, "learner_text": "Ho perso il mio wallet sul treno.", "level": "A2", "errors": [{"original": "wallet", "correction": "portafoglio", "type": "vocabulary"}]}
+{"id": 88, "learner_text": "Non trovo le keys di casa.", "level": "A2", "errors": [{"original": "keys", "correction": "chiavi", "type": "vocabulary"}]}
+{"id": 89, "learner_text": "Lei e molto gentile.", "level": "A1", "errors": [{"original": "Lei e", "correction": "Lei è", "type": "spelling"}]}
+{"id": 90, "learner_text": "Non lo so perche.", "level": "A1", "errors": [{"original": "perche", "correction": "perché", "type": "spelling"}]}
+{"id": 91, "learner_text": "La mia citta è piccola ma bella.", "level": "A1", "errors": [{"original": "citta", "correction": "città", "type": "spelling"}]}
+{"id": 92, "learner_text": "Qual'è il tuo numero di telefono?", "level": "A1", "errors": [{"original": "Qual'è", "correction": "Qual è", "type": "spelling"}]}
+{"id": 93, "learner_text": "Ho finito di studiare, così ora posso rilassarmi un po.", "level": "B1", "errors": [{"original": "un po", "correction": "un po'", "type": "spelling"}]}
+{"id": 94, "learner_text": "Ho comprato una rossa macchina.", "level": "A2", "errors": [{"original": "una rossa macchina", "correction": "una macchina rossa", "type": "word_order"}]}
+{"id": 95, "learner_text": "Io mai ho visto la neve.", "level": "A2", "errors": [{"original": "mai ho visto", "correction": "non ho mai visto", "type": "word_order"}]}
+{"id": 96, "learner_text": "Ho ancora non finito i compiti.", "level": "A2", "errors": [{"original": "Ho ancora non finito", "correction": "Non ho ancora finito", "type": "word_order"}]}
+{"id": 97, "learner_text": "Puoi dirmi dove la stazione è?", "level": "B1", "errors": [{"original": "dove la stazione è", "correction": "dove è la stazione", "type": "word_order"}]}
+{"id": 98, "learner_text": "Ieri ho andato a la stazione con mia amica.", "level": "A2", "errors": [{"original": "ho andato", "correction": "sono andato", "type": "grammar"}, {"original": "a la stazione", "correction": "alla stazione", "type": "grammar"}, {"original": "con mia amica", "correction": "con la mia amica", "type": "grammar"}]}
+{"id": 99, "learner_text": "Le ragazze è uscito presto.", "level": "A2", "errors": [{"original": "è uscito", "correction": "sono uscite", "type": "grammar"}]}
+{"id": 100, "learner_text": "Io sono 30 anni e lavoro come un ingegnere.", "level": "A2", "errors": [{"original": "sono 30 anni", "correction": "ho 30 anni", "type": "grammar"}, {"original": "come un ingegnere", "correction": "come ingegnere", "type": "grammar"}]}
+{"id": 101, "learner_text": "Mi piace molto le canzoni italiane perche sono romantiche.", "level": "A2", "errors": [{"original": "piace", "correction": "piacciono", "type": "grammar"}, {"original": "perche", "correction": "perché", "type": "spelling"}]}

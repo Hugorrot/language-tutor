@@ -50,6 +50,16 @@ One JSON object per line. Target: ~100 lines, including ~20% with **no errors** 
 - Mix error types: articles, gender/number agreement, prepositions, verb tenses (passato prossimo with essere/avere), vocabulary, word order.
 - Ideally two people annotate independently and disagreements are discussed.
 
+Current version: 101 sentences (A1 20, A2 63, B1 17, B2 1), 20 without errors, 85 errors
+(grammar 61: articles, agreement, prepositions, essere/avere, participles, subjunctive, pronouns;
+vocabulary 12: false friends, calques, English words; spelling 8; word order 4). Several sentences
+have more than one error. The correct sentences are hard negatives that look like typical mistakes
+(*mia madre*, *il problema*, *gli ho dato* to a man). **Draft: a second annotator should check it.**
+Row 3 (*Mi piace molto la pizza e la pasta*) is debatable: strictly *piacciono*, but common usage accepts *piace*.
+
+`FAKE_LLM=1 python eval/eval_errors.py` runs the script offline as a smoke test; its numbers only
+measure the offline regex rules, not the model.
+
 ### `datasets/error_pairs_it.jsonl` (experiment 2)
 52 pairs of errors over 13 typical A2 mistakes: 26 "same mistake, different wording", 14 **hard
 negatives** (different mistakes that look alike, e.g. *la mia amica* needs the article but *mia madre*
